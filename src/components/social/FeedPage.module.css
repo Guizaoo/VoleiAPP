@@ -1,0 +1,127 @@
+.page {
+  padding-block: var(--space-6) var(--space-16);
+}
+
+.intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+}
+
+.notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.notice svg {
+  flex-shrink: 0;
+  color: var(--color-accent-text);
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-areas:
+    'stories'
+    'side'
+    'posts';
+}
+
+.stories {
+  grid-area: stories;
+  min-width: 0;
+}
+
+.side {
+  grid-area: side;
+  min-width: 0;
+}
+
+.posts {
+  grid-area: posts;
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  align-content: start;
+}
+
+.composerBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 60px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.composerBar span:nth-child(2) {
+  flex: 1;
+}
+
+.composerBar svg {
+  color: var(--color-brand);
+}
+
+.composerBar:hover {
+  border-color: var(--color-brand);
+}
+
+.end {
+  padding: var(--space-6) 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+}
+
+/* No celular, posts ocupam a largura toda, como num app. */
+@media (max-width: 599px) {
+  .posts > article {
+    margin-inline: calc(var(--gutter) * -1);
+    border-radius: 0;
+    border-inline: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding-top: var(--space-8);
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 620px) 340px;
+    grid-template-areas:
+      'stories side'
+      'posts side';
+    grid-template-rows: auto 1fr;
+    justify-content: center;
+    column-gap: var(--space-8);
+    row-gap: var(--space-4);
+  }
+
+  .intro {
+    max-width: calc(620px + 340px + var(--space-8));
+    margin-inline: auto;
+  }
+
+  .side {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-4));
+    align-self: start;
+  }
+}

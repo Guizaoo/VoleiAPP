@@ -94,3 +94,19 @@ export function formatRelativeDay(iso: string, now: Date): string {
   const dayMonth = date.toLocaleDateString(siteConfig.locale, { day: '2-digit', month: '2-digit' });
   return `${weekday}, ${dayMonth}`;
 }
+
+/** "agora", "há 5 min", "há 3 h", "há 2 dias". */
+export function formatTimeAgo(minutes: number): string {
+  if (minutes < 1) return 'agora';
+  if (minutes < 60) return `há ${Math.round(minutes)} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `há ${hours} h`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? 'há 1 dia' : `há ${days} dias`;
+}
+
+/** 1.234 → "1.234"; 12.400 → "12,4 mil". */
+export function formatCount(n: number): string {
+  if (n >= 10000) return `${(n / 1000).toLocaleString(siteConfig.locale, { maximumFractionDigits: 1 })} mil`;
+  return n.toLocaleString(siteConfig.locale);
+}

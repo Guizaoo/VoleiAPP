@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  height: var(--header-height);
+  height: 60px;
 }
 
 .brand {
@@ -29,36 +29,37 @@
   border-radius: var(--radius-sm);
 }
 
-.desktopNav {
-  display: none;
-}
-
-.desktopNav ul {
+.tabs {
   display: flex;
   gap: var(--space-1);
   list-style: none;
 }
 
-.desktopNav a,
-.mobileNav a {
+.tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   min-height: var(--touch);
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-4);
   border-radius: var(--radius-pill);
-  color: var(--color-text);
-  font-weight: 600;
+  color: var(--color-text-muted);
+  font-weight: 700;
   text-decoration: none;
+  transition:
+    background-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
 }
 
-.desktopNav a:hover {
+.tab:hover {
+  color: var(--color-text);
   background: var(--color-surface-muted);
 }
 
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.tab[aria-current='page'] {
+  color: var(--color-brand-strong);
+  background: var(--color-brand-soft);
 }
 
 .cta {
@@ -66,41 +67,44 @@
   font-size: var(--text-sm);
 }
 
-.menuToggle {
-  display: grid;
-  place-items: center;
-  width: var(--touch);
-  height: var(--touch);
-  border: 1.5px solid var(--color-border);
-  border-radius: 50%;
-  background: var(--color-surface);
-  color: var(--color-text);
+.desktopNav {
+  display: none;
 }
 
+/* Celular: abas ocupando a largura toda, logo abaixo da marca. */
 .mobileNav {
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-md);
+  border-top: 1px solid var(--color-surface-muted);
 }
 
-.mobileNav ul {
-  display: flex;
-  flex-direction: column;
-  padding-block: var(--space-2);
-  list-style: none;
+.mobileNav .tabs {
+  gap: 0;
 }
 
-.mobileNav a {
+.mobileNav li {
+  flex: 1;
+}
+
+.mobileNav .tab {
   width: 100%;
-  min-height: 52px;
-  padding: 0;
+  min-height: 48px;
+  padding: 0 var(--space-2);
   border-radius: 0;
-  border-bottom: 1px solid var(--color-surface-muted);
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
 }
 
-.mobileNav li:last-child a {
-  border-bottom: 0;
+.mobileNav .tab[aria-current='page'] {
+  background: transparent;
+}
+
+.mobileNav .tab[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-brand);
 }
 
 @media (max-width: 379px) {
@@ -120,12 +124,15 @@
   }
 }
 
-@media (min-width: 960px) {
+@media (min-width: 900px) {
+  .inner {
+    height: var(--header-height);
+  }
+
   .desktopNav {
     display: block;
   }
 
-  .menuToggle,
   .mobileNav {
     display: none;
   }

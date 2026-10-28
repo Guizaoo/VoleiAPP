@@ -52,7 +52,8 @@
 
   --gutter: 16px;
   --container: 1180px;
-  --header-height: 64px;
+  /* Marca (60px) + abas (48px) + bordas no celular. */
+  --header-height: 110px;
   --touch: 44px;
 
   /* Formas e sombras */
@@ -80,10 +81,15 @@
   }
 }
 
+@media (min-width: 900px) {
+  :root {
+    --header-height: 72px;
+  }
+}
+
 @media (min-width: 1024px) {
   :root {
     --gutter: 32px;
-    --header-height: 72px;
   }
 }
 

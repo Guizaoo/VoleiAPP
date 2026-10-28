@@ -1,0 +1,35 @@
+.wrap {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.new {
+  background: conic-gradient(
+    from 200deg,
+    var(--color-brand-bright),
+    var(--color-brand),
+    var(--color-accent),
+    var(--color-brand-bright)
+  );
+}
+
+.seen {
+  background: var(--color-border-strong);
+}
+
+.new .avatar,
+.seen .avatar {
+  box-shadow: 0 0 0 3px var(--color-surface);
+}

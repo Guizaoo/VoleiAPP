@@ -74,7 +74,47 @@
   background: var(--color-surface);
 }
 
+.storyBackdrop {
+  background: rgb(5 10 7 / 0.92);
+}
+
+.story {
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+}
+
+.story .handle {
+  display: none;
+}
+
+.story .close {
+  top: calc(28px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  background: transparent;
+  color: #fff;
+  box-shadow: none;
+}
+
+.story .close:hover {
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+}
+
+.story .body {
+  overflow: hidden;
+}
+
 @media (min-width: 768px) {
+  .panel.story {
+    max-width: 440px;
+    height: min(860px, 92dvh);
+    max-height: min(860px, 92dvh);
+    border-radius: var(--radius-xl);
+  }
+
   .backdrop {
     align-items: center;
     padding: var(--space-6);

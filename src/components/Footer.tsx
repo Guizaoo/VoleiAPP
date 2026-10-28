@@ -1,10 +1,20 @@
 import { siteConfig } from '../config/site';
 import { photoCredits } from '../data/photoCredits';
-import { navLinks } from './Header';
+import { routePaths, type Route } from '../hooks/useRoute';
+import { handleRouteClick, tabs } from './Header';
 import { Logo } from './Logo';
 import styles from './Footer.module.css';
 
-export function Footer() {
+const sectionLinks = [
+  { hash: '#como-funciona', label: 'Como funciona' },
+  { hash: '#para-donos', label: 'Para donos de quadras' },
+];
+
+interface FooterProps {
+  onNavigate: (route: Route, hash?: string) => void;
+}
+
+export function Footer({ onNavigate }: FooterProps) {
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.inner}`}>
@@ -14,12 +24,18 @@ export function Footer() {
         </div>
         <nav aria-label="Rodapé">
           <ul className={styles.nav}>
-            <li>
-              <a href="#inicio">Início</a>
-            </li>
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a href={link.href}>{link.label}</a>
+            {tabs.map(({ route, label }) => (
+              <li key={route}>
+                <a href={routePaths[route]} onClick={(e) => handleRouteClick(e, () => onNavigate(route))}>
+                  {label}
+                </a>
+              </li>
+            ))}
+            {sectionLinks.map(({ hash, label }) => (
+              <li key={hash}>
+                <a href={`/${hash}`} onClick={(e) => handleRouteClick(e, () => onNavigate('quadras', hash))}>
+                  {label}
+                </a>
               </li>
             ))}
           </ul>

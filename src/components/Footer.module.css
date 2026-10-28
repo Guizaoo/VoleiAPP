@@ -16,7 +16,8 @@
 
 .nav {
   display: grid;
-  gap: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-4);
   list-style: none;
 }
 
@@ -70,6 +71,7 @@
   }
 
   .nav {
+    grid-template-columns: none;
     grid-auto-flow: column;
     gap: var(--space-6);
   }

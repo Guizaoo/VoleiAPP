@@ -1,0 +1,151 @@
+.viewer {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: #fff;
+}
+
+.progress {
+  position: absolute;
+  inset: calc(10px + env(safe-area-inset-top, 0px)) 10px auto;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+}
+
+.track {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.3);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #fff;
+}
+
+.done {
+  width: 100%;
+}
+
+.active {
+  animation-name: fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.header {
+  position: absolute;
+  inset: calc(24px + env(safe-area-inset-top, 0px)) 60px auto 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+}
+
+.time {
+  font-size: var(--text-xs);
+  color: rgb(255 255 255 / 0.8);
+}
+
+.pause {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  margin-left: auto;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+}
+
+.pause:hover {
+  background: rgb(255 255 255 / 0.15);
+}
+
+.media {
+  flex: 1;
+  min-height: 0;
+}
+
+.media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgb(0 0 0 / 0.45), transparent 22%, transparent 70%, rgb(0 0 0 / 0.6));
+}
+
+.caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  padding: var(--space-6) var(--space-5) calc(var(--space-8) + var(--safe-bottom));
+  font-size: var(--text-lg);
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+
+/* Áreas de toque para voltar/avançar (como no Instagram). */
+.zone {
+  position: absolute;
+  top: 90px;
+  bottom: 110px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 0);
+  transition: color var(--duration) var(--ease);
+}
+
+.zone:hover:not(:disabled),
+.zone:focus-visible {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.zone:disabled {
+  cursor: default;
+}
+
+.zonePrev {
+  left: 0;
+  width: 35%;
+  justify-content: flex-start;
+}
+
+.zoneNext {
+  right: 0;
+  width: 65%;
+  justify-content: flex-end;
+}
+
+@keyframes fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}

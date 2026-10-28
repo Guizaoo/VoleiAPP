@@ -1,0 +1,19 @@
+.trend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 30px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.up {
+  color: var(--color-brand);
+}
+
+.down {
+  color: var(--color-danger);
+}

@@ -1,6 +1,7 @@
 import { siteConfig } from '../config/site';
 import type { Court, TimeSlot } from '../types/court';
 import { toISODate } from './dates';
+import { seededRandom } from './random';
 
 /**
  * Disponibilidade FICTÍCIA e determinística.
@@ -8,21 +9,6 @@ import { toISODate } from './dates';
  * disponibilidade se mantém consistente entre o card, os detalhes e o resumo.
  * Quando houver API, substitua getSlotsForDate pela resposta do back-end.
  */
-
-/** Hash FNV-1a de 32 bits com mistura final (fmix32) → número entre 0 e 1. */
-function seededRandom(seed: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  h ^= h >>> 16;
-  h = Math.imul(h, 0x85ebca6b);
-  h ^= h >>> 13;
-  h = Math.imul(h, 0xc2b2ae35);
-  h ^= h >>> 16;
-  return (h >>> 0) / 0xffffffff;
-}
 
 export function buildSlotId(courtId: string, date: string, startHour: number): string {
   return `${courtId}_${date}_${String(startHour).padStart(2, '0')}00`;

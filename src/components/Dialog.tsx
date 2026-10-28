@@ -15,6 +15,8 @@ interface DialogProps {
   /** Barra fixa no rodapé do painel (ex.: ação de reservar). */
   footer?: ReactNode;
   closeLabel?: string;
+  /** "story" abre em tela cheia com fundo escuro (visualizador de stories). */
+  variant?: 'default' | 'story';
   children: ReactNode;
 }
 
@@ -25,7 +27,16 @@ interface DialogProps {
  * - Fecha com Escape ou clique fora.
  * - Bloqueia a rolagem e a interação com o fundo.
  */
-export function Dialog({ open, onClose, titleId, size = 'md', footer, closeLabel = 'Fechar', children }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  titleId,
+  size = 'md',
+  footer,
+  closeLabel = 'Fechar',
+  variant = 'default',
+  children,
+}: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -88,14 +99,14 @@ export function Dialog({ open, onClose, titleId, size = 'md', footer, closeLabel
 
   return createPortal(
     <div
-      className={styles.backdrop}
+      className={`${styles.backdrop} ${variant === 'story' ? styles.storyBackdrop : ''}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
         ref={panelRef}
-        className={`${styles.panel} ${size === 'lg' ? styles.large : ''}`}
+        className={`${styles.panel} ${size === 'lg' ? styles.large : ''} ${variant === 'story' ? styles.story : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
