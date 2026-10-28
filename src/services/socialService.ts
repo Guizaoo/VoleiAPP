@@ -14,6 +14,11 @@ export const visitor: Player = {
   season: { beach: { games: 0, wins: 0 }, indoor: { games: 0, wins: 0 } },
 };
 
+/** Perfil local da aba; o celular nunca faz parte dos dados públicos do feed. */
+export function setVisitorProfile(name: string) {
+  visitor.name = name;
+}
+
 /**
  * Acesso aos dados sociais FICTÍCIOS. Na versão com API, estas funções
  * passam a chamar GET /api/feed, GET /api/stories e GET /api/ranking.
