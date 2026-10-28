@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { Bookmark, Heart, MapPin, MessageCircle, Send } from 'lucide-react';
+import { Bookmark, MapPin, MessageSquare, Share2, Volleyball } from 'lucide-react';
 import { formatCount, formatTimeAgo } from '../../lib/format';
 import { courtsService } from '../../services/courtsService';
 import { socialService } from '../../services/socialService';
@@ -85,12 +85,14 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
         {post.isLocal && <span className={styles.localTag}>Só você vê</span>}
       </header>
 
+      {post.caption && <p className={styles.caption}>{post.caption}</p>}
+
       {post.image && (
         <div className={styles.media} onDoubleClick={likeFromImage}>
           <CourtImage photo={post.image} />
           {burst > 0 && (
             <span key={burst} className={styles.burst} aria-hidden="true">
-              <Heart size={88} fill="currentColor" strokeWidth={0} />
+              <Volleyball size={84} strokeWidth={1.8} />
             </span>
           )}
         </div>
@@ -100,27 +102,36 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
         <div className={styles.actions}>
           <button
             type="button"
-            className={`${styles.action} ${liked ? styles.liked : ''}`}
+            className={`${styles.action} ${styles.cheer} ${liked ? styles.cheered : ''}`}
             onClick={onToggleLike}
             aria-pressed={liked}
-            aria-label="Curtir"
           >
-            <Heart size={24} fill={liked ? 'currentColor' : 'none'} aria-hidden="true" />
+            <Volleyball size={19} aria-hidden="true" />
+            <span>Boa!</span>
+            {likes > 0 && (
+              <span className={styles.count}>
+                {formatCount(likes)}
+                <span className="visually-hidden"> {likes === 1 ? 'pessoa mandou' : 'pessoas mandaram'}</span>
+              </span>
+            )}
           </button>
-          <button type="button" className={styles.action} onClick={() => inputRef.current?.focus()} aria-label="Comentar">
-            <MessageCircle size={24} aria-hidden="true" />
+          <button type="button" className={styles.action} onClick={() => inputRef.current?.focus()}>
+            <MessageSquare size={19} aria-hidden="true" />
+            <span className={styles.count}>{post.comments.length}</span>
+            <span className="visually-hidden">{post.comments.length === 1 ? 'comentário' : 'comentários'}, comentar</span>
           </button>
-          <button type="button" className={styles.action} onClick={share} aria-label="Compartilhar">
-            <Send size={23} aria-hidden="true" />
+          <button type="button" className={styles.action} onClick={share}>
+            <Share2 size={19} aria-hidden="true" />
+            <span className={styles.optionalLabel}>Compartilhar</span>
           </button>
           <button
             type="button"
-            className={`${styles.action} ${styles.save} ${saved ? styles.saved : ''}`}
+            className={`${styles.action} ${saved ? styles.saved : ''}`}
             onClick={onToggleSave}
             aria-pressed={saved}
-            aria-label="Salvar"
           >
-            <Bookmark size={24} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
+            <Bookmark size={19} fill={saved ? 'currentColor' : 'none'} aria-hidden="true" />
+            <span className={styles.optionalLabel}>{saved ? 'Salvo' : 'Salvar'}</span>
           </button>
         </div>
 
@@ -128,29 +139,26 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
           {status}
         </p>
 
-        <p className={styles.likes}>
-          {likes === 0 ? 'Seja o primeiro a curtir' : `${formatCount(likes)} ${likes === 1 ? 'curtida' : 'curtidas'}`}
-        </p>
-
-        {post.caption && (
-          <p className={styles.caption}>
-            <strong>{author.handle}</strong> {post.caption}
-          </p>
-        )}
-
         {hidden > 0 && !showAll && (
           <button type="button" className={styles.more} onClick={() => setShowAll(true)}>
-            Ver todos os {post.comments.length} comentários
+            Ver os {post.comments.length} comentários
           </button>
         )}
 
         {comments.length > 0 && (
           <ul className={styles.comments} aria-label="Comentários">
-            {comments.map((comment) => (
-              <li key={comment.id}>
-                <strong>{socialService.getPlayer(comment.playerId).handle}</strong> {comment.text}
-              </li>
-            ))}
+            {comments.map((comment) => {
+              const commenter = socialService.getPlayer(comment.playerId);
+              return (
+                <li key={comment.id}>
+                  <Avatar player={commenter} size={28} />
+                  <p className={styles.bubble}>
+                    <strong>{commenter.name}</strong>
+                    {comment.text}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
         )}
 
@@ -162,14 +170,14 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
             ref={inputRef}
             id={`${post.id}-comment`}
             type="text"
-            placeholder="Adicione um comentário…"
+            placeholder="Escreva um comentário…"
             autoComplete="off"
             maxLength={200}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
           <button type="submit" disabled={!draft.trim()}>
-            Publicar
+            Enviar
           </button>
         </form>
       </div>

@@ -66,7 +66,7 @@ Preços ficam em **centavos** (`16000` = R$ 160,00) para evitar erros de arredon
 
 O topo do site tem três abas: **Quadras** (`/`), **Feed** (`/feed`) e **Ranking** (`/ranking`). As rotas usam a History API, sem biblioteca, e o `vercel.json` já redireciona o acesso direto a elas.
 
-- **Feed:** stories (avançam a cada 5 s, com pausa, setas e toque nas laterais), postagens com curtir (botão ou duplo clique na foto), comentar, compartilhar (menu do celular ou cópia do link) e salvar. A quadra marcada no post abre os horários dela. No desktop, o ranking da semana fica fixo na lateral direita.
+- **Feed:** stories (avançam a cada 5 s, com pausa, setas e toque nas laterais), postagens com a reação **"Boa!"** (botão com bola de vôlei ou duplo clique na foto), comentários em balões, compartilhar (menu do celular ou cópia do link) e salvar. A quadra marcada no post abre os horários dela. No desktop, o ranking da semana fica fixo na lateral direita.
 - **Nova postagem:** foto do aparelho ou de exemplo, legenda e quadra opcional. A postagem aparece só no navegador de quem criou e some ao recarregar; nada é enviado.
 - **Ranking:** filtros por período (semana, mês, temporada) e modalidade, pódio dos 3 primeiros e tabela completa com variação de posição. Regra ilustrativa: 3 pontos por vitória + 1 por partida.
 - **Dados:** perfis, posts, stories e resultados são **fictícios** (`src/data/players.ts` e `src/data/posts.ts`). Os avatares usam iniciais, sem fotos de pessoas. A lógica do ranking fica em `src/lib/ranking.ts` e o acesso aos dados em `src/services/socialService.ts`. Numa API futura, os endpoints seriam `GET /api/feed`, `GET /api/stories`, `GET /api/ranking` e `POST /api/posts`.
