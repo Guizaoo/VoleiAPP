@@ -1,0 +1,154 @@
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.count {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-3) 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.key li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-brand);
+  background: var(--color-surface);
+}
+
+.swatchBooked {
+  border-color: var(--color-border);
+  background: repeating-linear-gradient(135deg, var(--color-surface-muted) 0 3px, var(--color-border) 3px 5px);
+}
+
+.swatchSelected {
+  background: var(--color-brand);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+@media (min-width: 420px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.slot {
+  /* Mantém o radio oculto dentro do rótulo (e do contêiner com rolagem). */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-1);
+  border: 1.5px solid var(--color-brand-tint);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+}
+
+.slot:hover:not([aria-disabled]) {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.slot:active:not([aria-disabled]) {
+  transform: scale(0.97);
+}
+
+.slot:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.slot[data-status='booked'] {
+  border-color: var(--color-border);
+  background: repeating-linear-gradient(135deg, var(--color-surface-muted) 0 6px, #e7ebe3 6px 9px);
+  cursor: not-allowed;
+}
+
+.slot[data-status='booked'] .time {
+  color: var(--color-text-subtle);
+  text-decoration: line-through;
+}
+
+.slot[data-status='booked'] .status,
+.slot[data-status='past'] .status {
+  color: var(--color-text-subtle);
+}
+
+.slot[data-status='past'] {
+  border-style: dashed;
+  border-color: var(--color-border);
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.slot[data-status='past'] .time {
+  color: var(--color-text-subtle);
+}
+
+.slot[data-selected='true'] {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgb(11 128 67 / 0.7);
+}
+
+.slot[data-selected='true'] .status {
+  color: #fff;
+}
+
+.slot[data-selected='true']:hover {
+  background: var(--color-brand-hover);
+}

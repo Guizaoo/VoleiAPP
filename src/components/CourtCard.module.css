@@ -1,0 +1,203 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+  animation: rise 320ms var(--ease) both;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--color-surface-muted);
+}
+
+.badges {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.94);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.photoNote {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgb(19 32 26 / 0.7);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.indoor {
+  background: var(--color-text);
+  color: #fff;
+}
+
+.beach {
+  background: var(--color-accent);
+  color: #1f1206;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  padding: var(--space-4);
+}
+
+.heading {
+  display: grid;
+  gap: 4px;
+}
+
+.name {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.highlights li {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.slots {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.slotsTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.slotsTitle svg {
+  color: var(--color-brand);
+}
+
+.slotList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.slotChip {
+  min-width: 64px;
+  min-height: var(--touch);
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--color-brand-tint);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.slotChip:hover {
+  border-color: var(--color-brand);
+  background: var(--color-brand-tint);
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.noSlots {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-surface-muted);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.price strong {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 800;
+}
+
+.price span {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

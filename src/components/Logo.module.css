@@ -1,0 +1,27 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
+}
+
+.mark {
+  color: var(--color-brand);
+  flex-shrink: 0;
+}
+
+.word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.375rem;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.inverted {
+  color: #fff;
+}
+
+.inverted .mark {
+  color: var(--color-brand-bright);
+}

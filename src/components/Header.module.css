@@ -1,0 +1,137 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgb(245 247 242 / 0.94);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@supports (backdrop-filter: blur(8px)) {
+  .header {
+    background: rgb(245 247 242 / 0.82);
+    backdrop-filter: blur(10px);
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: var(--header-height);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.desktopNav {
+  display: none;
+}
+
+.desktopNav ul {
+  display: flex;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.desktopNav a,
+.mobileNav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.desktopNav a:hover {
+  background: var(--color-surface-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cta {
+  padding-inline: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.menuToggle {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.mobileNav {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.mobileNav ul {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--space-2);
+  list-style: none;
+}
+
+.mobileNav a {
+  width: 100%;
+  min-height: 52px;
+  padding: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--color-surface-muted);
+  font-size: var(--text-lg);
+}
+
+.mobileNav li:last-child a {
+  border-bottom: 0;
+}
+
+@media (max-width: 379px) {
+  /* Esconde o texto visualmente, mas mantém o nome acessível do botão. */
+  .cta span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .cta {
+    width: var(--touch);
+    padding: 0;
+  }
+}
+
+@media (min-width: 960px) {
+  .desktopNav {
+    display: block;
+  }
+
+  .menuToggle,
+  .mobileNav {
+    display: none;
+  }
+
+  .cta {
+    font-size: var(--text-md);
+    padding-inline: var(--space-5);
+  }
+}

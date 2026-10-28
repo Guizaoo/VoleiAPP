@@ -1,0 +1,230 @@
+.section {
+  background: var(--color-surface);
+  border-block: 1px solid var(--color-border);
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  max-width: 64ch;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.notice svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--color-accent-text);
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.main {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+  align-content: start;
+}
+
+.toolbar {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  display: grid;
+  gap: var(--space-3);
+  margin-inline: calc(var(--gutter) * -1);
+  padding: var(--space-3) var(--gutter);
+  background: rgb(255 255 255 / 0.96);
+  border-bottom: 1px solid var(--color-surface-muted);
+}
+
+.toolbarRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.searchField {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchField input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4) 0 42px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.searchField input:focus-visible {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 4px var(--color-brand-soft);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.filtersButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--color-text);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+.filtersButton:hover {
+  background: var(--color-surface-muted);
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #1f1206;
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.results {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--touch);
+}
+
+.count {
+  font-weight: 700;
+}
+
+.clear {
+  margin-right: calc(var(--space-3) * -1);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-5);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.empty h3 {
+  font-size: var(--text-xl);
+}
+
+.empty p {
+  max-width: 44ch;
+  color: var(--color-text-muted);
+}
+
+.empty button {
+  margin-top: var(--space-2);
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+.sheetBody {
+  padding: var(--space-8) var(--space-4) var(--space-6);
+}
+
+.sheetTitle {
+  margin-bottom: var(--space-6);
+  font-size: var(--text-xl);
+}
+
+.sheetFooter {
+  display: flex;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sheetBody {
+    padding-inline: var(--space-6);
+  }
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: 280px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-5));
+  }
+
+  .sidebarInner {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .sidebarInner > button {
+    justify-self: start;
+  }
+
+  .sidebarTitle {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+}
+
+@media (min-width: 1240px) {
+  .layout {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+}

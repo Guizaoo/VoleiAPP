@@ -1,0 +1,80 @@
+.fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  /* Mantém o radio oculto dentro do rótulo (e do contêiner com rolagem). */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch);
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    color var(--duration) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--color-brand);
+}
+
+.chip:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.chip[data-selected='true'] {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+  color: var(--color-brand-strong);
+}
+
+/* Variação segmentada: ocupa a largura toda, ideal para o polegar. */
+.segmented .options {
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+}
+
+.segmented .chip {
+  flex: 1;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.segmented .chip[data-selected='true'] {
+  background: var(--color-surface);
+  border-color: transparent;
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}

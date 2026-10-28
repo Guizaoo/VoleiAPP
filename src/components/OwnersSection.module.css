@@ -1,0 +1,113 @@
+.card {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--color-text);
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Linhas de quadra discretas no fundo */
+.card::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  bottom: -80px;
+  width: 260px;
+  height: 260px;
+  border: 2px solid rgb(255 255 255 / 0.08);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  color: #fff;
+}
+
+.lead {
+  margin-top: var(--space-3);
+  color: rgb(255 255 255 / 0.78);
+  max-width: 48ch;
+}
+
+.cta {
+  margin-top: var(--space-6);
+  background: var(--color-brand-bright);
+  color: var(--color-text);
+  white-space: normal;
+  text-align: left;
+}
+
+.cta:hover {
+  background: #4fd884;
+}
+
+.benefits {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.benefits li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  color: rgb(255 255 255 / 0.9);
+}
+
+.benefitIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: rgb(251 122 30 / 0.18);
+  color: var(--color-accent);
+}
+
+.dialogBody {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5) var(--space-6);
+  color: var(--color-text-muted);
+}
+
+.dialogIcon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+.dialogTitle {
+  margin-top: var(--space-2);
+  padding-right: var(--space-10);
+  font-size: var(--text-xl);
+  color: var(--color-text);
+}
+
+@media (min-width: 960px) {
+  .card {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    gap: var(--space-12);
+    padding: var(--space-12);
+  }
+}
