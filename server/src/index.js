@@ -9,15 +9,15 @@ import multer from 'multer';
 import sharp from 'sharp';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { requestLogging, apiErrorHandler, rateLimitHandler, writeLog } from './logging.js';
-import { allowedEmails, text, uuid, player } from './validation.js';
+import { accessPolicy, text, uuid, player } from './validation.js';
 
-for (const key of ['DATABASE_URL', 'GOOGLE_CLIENT_ID', 'APP_ORIGIN', 'BETA_ALLOWED_EMAILS']) {
+for (const key of ['DATABASE_URL', 'GOOGLE_CLIENT_ID', 'APP_ORIGIN']) {
  if (!process.env[key]) throw new Error(`Configure ${key}.`);
 }
 const app = express();
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const google = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-const invited = allowedEmails(process.env.BETA_ALLOWED_EMAILS);
+const access = accessPolicy(process.env);
 const production = process.env.NODE_ENV === 'production';
 const cookieName = production ? '__Host-levanta' : 'levanta';
 const cookieOptions = { httpOnly: true, secure: production, sameSite: 'lax', path: '/' };
@@ -45,7 +45,8 @@ app.post('/api/auth/google', rateLimit({ windowMs: 60_000, limit: 10, handler: r
   const ticket = await google.verifyIdToken({ idToken: text(req.body.credential, 8192), audience: process.env.GOOGLE_CLIENT_ID });
   payload = ticket.getPayload();
  } catch { throw fail(401, 'Não foi possível validar o login com Google.', 'GOOGLE_TOKEN_INVALID'); }
- if (!payload?.sub || !payload.email_verified || !invited.has(payload.email?.toLowerCase())) throw fail(403, 'Este e-mail ainda não foi convidado para o beta.', 'BETA_ACCESS_DENIED');
+ if (!payload?.sub || payload.email_verified !== true || typeof payload.email !== 'string' || !payload.email) throw fail(401, 'O Google precisa confirmar o e-mail da conta.', 'GOOGLE_EMAIL_UNVERIFIED');
+ if (!access.allows(payload.email)) throw fail(403, 'Este e-mail ainda não foi convidado para o beta.', 'BETA_ACCESS_DENIED');
  const { rows: [user] } = await pool.query('INSERT INTO users(google_sub,email,name) VALUES($1,$2,$3) ON CONFLICT(google_sub) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name RETURNING *', [payload.sub, payload.email.toLowerCase(), (payload.name || 'Jogador').slice(0, 120)]);
  const token = randomBytes(32).toString('hex');
  await pool.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,now()+interval '7 days')", [hash(token), user.id]);
@@ -56,9 +57,9 @@ app.post('/api/auth/google', rateLimit({ windowMs: 60_000, limit: 10, handler: r
 app.use('/api', async (req, res, next) => {
  res.set('Cache-Control', 'no-store');
  const token = req.cookies[cookieName];
- if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) throw fail(401, 'Entre para acessar o beta.', 'SESSION_MISSING');
+ if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) throw fail(401, 'Entre para continuar.', 'SESSION_MISSING');
  const { rows: [user] } = await pool.query('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()', [hash(token)]);
- if (!user || !invited.has(user.email.toLowerCase())) throw fail(401, 'Sua sessão expirou ou seu acesso foi removido. Entre novamente.', 'SESSION_INVALID');
+ if (!user || !access.allows(user.email)) throw fail(401, 'Sua sessão expirou ou seu acesso foi removido. Entre novamente.', 'SESSION_INVALID');
  req.user = user;
  next();
 });
@@ -134,5 +135,5 @@ app.get('/api/media/:id', async (req, res) => {
 });
 app.use((_req, _res, next) => next(fail(404, 'Rota não encontrada.', 'ROUTE_NOT_FOUND')));
 app.use(apiErrorHandler);
-const server = app.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => writeLog('info', 'api_started', { message: 'Levanta API pronta.', port: Number(process.env.PORT || 3001), storageConfigured: Boolean(s3) }));
+const server = app.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => writeLog('info', 'api_started', { message: 'Levanta API pronta.', port: Number(process.env.PORT || 3001), storageConfigured: Boolean(s3), publicSignup: access.publicSignup }));
 process.on('SIGTERM', () => server.close(() => { pool.end().then(() => process.exit(0)); }));

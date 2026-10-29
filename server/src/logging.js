@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 
 const reasons = {
  ORIGIN_NOT_ALLOWED: 'A origem da requisição não corresponde a APP_ORIGIN.',
+ GOOGLE_EMAIL_UNVERIFIED: 'A credencial Google não contém um e-mail verificado.',
  GOOGLE_TOKEN_INVALID: 'O Google não validou a credencial recebida.',
  BETA_ACCESS_DENIED: 'A conta não está autorizada para o beta.',
  SESSION_MISSING: 'Cookie de sessão ausente ou inválido.',
