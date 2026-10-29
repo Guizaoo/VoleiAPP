@@ -1,10 +1,25 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useState, type FormEvent, type ReactNode } from 'react';
 import { normalizeName, normalizePhone, validateProfile, type LocalProfile } from '../lib/login';
 import { setVisitorProfile } from '../services/socialService';
+import { ArrowRight, UserRound, Phone, Volleyball } from 'lucide-react';
 import { Logo } from './Logo';
+import { Dialog } from './Dialog';
 import styles from './LoginGate.module.css';
 
 const SESSION_KEY = 'levanta.local-profile.v1';
+
+interface AccountState {
+  profile: LocalProfile | null;
+  openLogin: () => void;
+  logout: () => void;
+  requireAccount: () => boolean;
+}
+const AccountContext = createContext<AccountState | null>(null);
+export function useAccount() {
+  const account = useContext(AccountContext);
+  if (!account) throw new Error('Account provider is missing');
+  return account;
+}
 
 function readProfile(): LocalProfile | null {
   try {
@@ -12,7 +27,9 @@ function readProfile(): LocalProfile | null {
     if (!value || typeof value !== 'object') return null;
     const profile = value as LocalProfile;
     if (typeof profile.firstName !== 'string' || typeof profile.lastName !== 'string' || typeof profile.phone !== 'string') return null;
-    return validateProfile(profile) ? null : profile;
+    if (validateProfile(profile)) return null;
+    setVisitorProfile(`${profile.firstName} ${profile.lastName}`);
+    return profile;
   } catch {
     return null;
   }
@@ -20,14 +37,30 @@ function readProfile(): LocalProfile | null {
 
 export function LoginGate({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<LocalProfile | null>(readProfile);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
+  const [open, setOpen] = useState(false);
+  const openLogin = useCallback(() => setOpen(true), []);
+  const requireAccount = useCallback(() => {
+    if (profile) return true;
+    setOpen(true);
+    return false;
+  }, [profile]);
+  const logout = () => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* Encerra também em memória. */ }
+    setVisitorProfile('Você');
+    setProfile(null);
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const next = { firstName: normalizeName(firstName), lastName: normalizeName(lastName), phone: normalizePhone(phone) };
+    const [firstName, ...surname] = normalizeName(fullName).split(' ');
+    if (!surname.length) {
+      setError('Informe seu nome e sobrenome no campo Nome completo.');
+      return;
+    }
+    const next = { firstName, lastName: surname.join(' '), phone: normalizePhone(phone) };
     const message = validateProfile(next);
     if (message) { setError(message); return; }
     try {
@@ -36,46 +69,45 @@ export function LoginGate({ children }: { children: ReactNode }) {
       setError('Permita o armazenamento nesta aba para entrar.');
       return;
     }
+    setVisitorProfile(`${next.firstName} ${next.lastName}`);
     setProfile(next);
+    setOpen(false);
     setError('');
-    setFirstName('');
-    setLastName('');
+    setFullName('');
     setPhone('');
   };
 
-  if (profile) {
-    setVisitorProfile(`${profile.firstName} ${profile.lastName}`);
-    return <>
-      <div className={styles.account}>
-        <span>Olá, <strong>{profile.firstName}</strong>!</span>
-        <button type="button" className="btn btn-ghost" onClick={() => {
-          try { sessionStorage.removeItem(SESSION_KEY); } catch { /* A sessão em memória também é encerrada. */ }
-          setVisitorProfile('Você');
-          setProfile(null);
-        }}>Sair</button>
+  return <AccountContext.Provider value={{ profile, openLogin, logout, requireAccount }}>
+    <div key={profile?.phone ?? 'guest'}>{children}</div>
+    <Dialog open={open} onClose={() => { setOpen(false); setError(''); }} titleId="login-title" closeLabel="Fechar entrada">
+    <section className={styles.content} aria-labelledby="login-title">
+      <header className={styles.header}><Logo /></header>
+      <div className={styles.intro}>
+        <span className={styles.eyebrow}><Volleyball size={16} aria-hidden="true" /> Seu próximo jogo começa aqui</span>
+        <h2 id="login-title">Entre para a comunidade</h2>
+        <p>Encontre sua turma e faça parte do jogo. Para começar, conte um pouco sobre você.</p>
       </div>
-      {children}
-    </>;
-  }
-
-  return <main className={styles.page}>
-    <section className={styles.card} aria-labelledby="login-title">
-      <Logo />
-      <span className={styles.eyebrow}>Seu próximo jogo começa aqui</span>
-      <h1 id="login-title">Entre para a comunidade</h1>
-      <p>Conte como você se chama e informe seu celular para começar.</p>
       <form onSubmit={submit} className={styles.form}>
-        <label htmlFor="first-name">Nome</label>
-        <input id="first-name" autoComplete="given-name" value={firstName} onChange={e => setFirstName(e.target.value)} required maxLength={60} />
-        <label htmlFor="last-name">Sobrenome</label>
-        <input id="last-name" autoComplete="family-name" value={lastName} onChange={e => setLastName(e.target.value)} required maxLength={60} />
-        <label htmlFor="phone">Celular com DDD</label>
-        <input id="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="(98) 9XXXX-XXXX" value={phone} onChange={e => setPhone(e.target.value)} required maxLength={22} aria-describedby="phone-help login-error" />
-        <small id="phone-help">Aceitamos celulares com DDD 98. Seu número não aparece no feed.</small>
+        <div className={styles.field}>
+          <label htmlFor="full-name">Nome completo</label>
+          <div className={styles.inputWrap}>
+            <UserRound size={19} aria-hidden="true" />
+            <input id="full-name" autoComplete="name" placeholder="Seu nome e sobrenome" value={fullName} onChange={e => { setFullName(e.target.value); setError(''); }} required maxLength={121} aria-describedby={error ? 'login-error' : undefined} />
+          </div>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="phone">Celular com DDD</label>
+          <div className={styles.inputWrap}>
+            <Phone size={19} aria-hidden="true" />
+            <input id="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="(98) 9XXXX-XXXX" value={phone} onChange={e => { setPhone(e.target.value); setError(''); }} required maxLength={22} aria-describedby={error ? 'phone-hint login-error' : 'phone-hint'} />
+          </div>
+          <small id="phone-hint">Use um celular com DDD 98.</small>
+        </div>
         {error && <p id="login-error" role="alert" className={styles.error}>{error}</p>}
-        <button type="submit" className="btn btn-primary btn-lg btn-block">Entrar no Levanta</button>
+        <button type="submit" className={`btn btn-primary btn-block ${styles.submit}`}>Entrar no Levanta <ArrowRight size={19} aria-hidden="true" /></button>
       </form>
-      <p className={styles.notice}>Acesso de demonstração nesta aba. Validamos o formato do celular; a confirmação por SMS ainda não está disponível. Este acesso não cria uma conta verificada.</p>
+      <div className={styles.footer}><span aria-hidden="true" className={styles.statusDot} /> Mais gente na quadra. Mais jogo na sua vida.</div>
     </section>
-  </main>;
+    </Dialog>
+  </AccountContext.Provider>;
 }

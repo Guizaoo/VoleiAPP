@@ -10,6 +10,7 @@ import { RankingWidget } from './RankingWidget';
 import { StoriesBar } from './StoriesBar';
 import { StoryViewer } from './StoryViewer';
 import styles from './FeedPage.module.css';
+import { useAccount } from '../LoginGate';
 
 function sortStories(seen: Set<string>) {
   const all = socialService.listStories();
@@ -23,6 +24,8 @@ interface FeedPageProps {
 }
 
 export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
+  const { requireAccount } = useAccount();
+  const openComposer = () => { if (requireAccount()) setComposerOpen(true); };
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [storyId, setStoryId] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
@@ -53,7 +56,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
             stories={stories}
             seen={feed.seenStories}
             onOpen={setStoryId}
-            onCreate={() => setComposerOpen(true)}
+            onCreate={openComposer}
           />
         </div>
 
@@ -62,7 +65,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
         </aside>
 
         <div className={styles.posts}>
-          <button type="button" className={styles.composerBar} onClick={() => setComposerOpen(true)}>
+          <button type="button" className={styles.composerBar} onClick={openComposer}>
             <Avatar player={visitor} size={36} />
             <span>Compartilhe seu jogo…</span>
             <ImagePlus size={22} aria-hidden="true" />
