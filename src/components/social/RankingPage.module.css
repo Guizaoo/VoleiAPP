@@ -73,51 +73,47 @@
 }
 
 .prizes {
-  margin-top: var(--space-6);
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.prizesHeading h2 {
-  margin-top: var(--space-3);
-  font-size: var(--text-xl);
-}
-
-.prizesHeading p, .prizeCard p {
-  margin-top: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
-
-.prizeGrid {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-  padding: 0;
-  list-style: none;
-}
-
-.prizeCard {
-  min-width: 0;
-  padding: var(--space-4);
+  margin-top: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #f6f5ee;
+  background: var(--color-surface);
+  overflow: hidden;
 }
-
-.prizeCard:first-child { border-color: #c7ac65; background: #faf6e9; }
-.prizePlace { color: #28543a; font-weight: 800; font-size: var(--text-sm); }
-.prizeArt { display: block; width: 100%; height: 170px; margin-block: var(--space-2); }
-.prizeCard h3 { font-size: var(--text-md); color: #173e2a; }
-.prizeCard p { color: #526158; }
-.prizeNote { margin-top: var(--space-4); font-size: var(--text-xs); color: var(--color-text-subtle); }
-.cashPrize { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); min-height: 170px; margin-block: var(--space-2); color: #205739; }
-.cashPrize strong { font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
-
+.prizesSummary { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; list-style: none; color: var(--color-brand-strong); }
+.prizesSummary::-webkit-details-marker { display: none; }
+.prizesSummary > svg { flex-shrink: 0; }
+.prizesSummary > span { flex: 1; min-width: 0; }
+.prizesSummary strong { display: block; font-size: 15px; }
+.prizesSummary small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--color-text-muted); }
+.expandIcon { transition: transform 180ms var(--ease); }
+.prizes[open] .expandIcon { transform: rotate(180deg); }
+.prizesSummary:hover { background: var(--color-bg); }
+.prizeGrid { display: grid; gap: 8px; padding: 0 12px; list-style: none; }
+.prizeCard { min-width: 0; border: 1px solid var(--color-border); border-radius: 10px; background: #f7f8f4; overflow: hidden; }
+.prizeCard:first-child { border-color: #dfcf9f; background: #faf7ed; }
+.prizeButton { display: flex; align-items: center; gap: 10px; padding: 10px; width: 100%; border: 0; background: transparent; text-align: left; }
+.prizeButton:hover { background: rgb(11 128 67 / 0.05); }
+.prizeButton > svg:last-child { flex-shrink: 0; color: var(--color-text-subtle); }
+.prizeArt { display: block; width: 64px; height: 54px; flex-shrink: 0; }
+.cashThumb { width: 64px; flex-shrink: 0; color: var(--color-brand); }
+.prizeLabel { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.prizePlace { color: #28543a; font-weight: 700; font-size: 11px; }
+.prizeLabel strong { font-size: 13px; }
+.prizeLabel small { font-size: 11px; color: var(--color-text-subtle); }
+.prizeNote { margin: 12px 16px; font-size: 11px; color: var(--color-text-subtle); }
+.prizeDetail { padding: 48px 24px 24px; text-align: center; }
+.detailArt { display: grid; place-items: center; margin: 24px 0; border-radius: 16px; background: #f7f5ed; }
+.detailArt .prizeArt { width: 100%; max-width: 340px; height: clamp(150px, 26dvh, 220px); }
+.prizeDetail h2 { font-size: 26px; }
+.prizeDetail > p { margin-top: 12px; color: var(--color-text-muted); font-size: 14px; }
+.prizeDetail > button { margin-top: 24px; }
+.cashPrize { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: clamp(150px, 26dvh, 220px); color: #205739; }
+.cashPrize strong { font-family: var(--font-display); font-size: 48px; font-weight: 800; }
 @media (min-width: 640px) {
   .prizeGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .prizeButton { flex-wrap: wrap; }
+  .prizeButton .prizeArt, .prizeButton .cashThumb { width: 48px; }
+  .prizeButton > svg:last-child { display: none; }
 }
 
 /* Pódio */

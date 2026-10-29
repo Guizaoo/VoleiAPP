@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Info, Medal } from 'lucide-react';
+import { Info, Medal, ChevronDown, ChevronRight, Gift } from 'lucide-react';
 import { siteConfig } from '../../config/site';
 import { modalityLabels } from '../../data/labels';
 import { periodLabels, POINTS_PER_GAME, POINTS_PER_WIN } from '../../lib/ranking';
 import { socialService } from '../../services/socialService';
 import type { RankingModality, RankingPeriod } from '../../types/social';
 import { ChipGroup } from '../ChipGroup';
+import { Dialog } from '../Dialog';
 import { Avatar } from './Avatar';
 import { TrendBadge } from './TrendBadge';
 import styles from './RankingPage.module.css';
@@ -62,6 +63,7 @@ function winRate(wins: number, games: number) {
 
 export function RankingPage() {
   const [period, setPeriod] = useState<RankingPeriod>('week');
+  const [selectedPrize, setSelectedPrize] = useState<{ name: string; description: string; place: number; kind?: typeof weeklyPrizes[number]['kind']; amount?: number } | null>(null);
   const [modality, setModality] = useState<RankingModality>('all');
   const entries = useMemo(() => socialService.getRanking(modality, period), [modality, period]);
   const podium = entries.slice(0, 3);
@@ -112,40 +114,46 @@ export function RankingPage() {
         />
       </div>
 
-      <section className={styles.prizes} aria-labelledby="prizes-title">
-        <div className={styles.prizesHeading}>
-          <span className={styles.seasonBadge}>{period === 'week' ? 'Toda semana tem conquista' : 'O grande prêmio do mês'}</span>
-          <h2 id="prizes-title">{period === 'week' ? 'Premiação da semana' : 'Premiação do mês'}</h2>
-          <p>{period === 'week' ? 'Três lugares no pódio. Três jeitos de levar o Levanta com você.' : 'A disputa continua ao longo do mês, com uma premiação maior para quem chegar ao topo.'}</p>
-        </div>
-        {period === 'week' ? (
-          <ol className={styles.prizeGrid}>
-            {weeklyPrizes.map((prize, index) => (
-              <li key={prize.kind} className={styles.prizeCard}>
-                <span className={styles.prizePlace}>{index + 1}º lugar</span>
+      <details className={styles.prizes}>
+        <summary className={styles.prizesSummary}>
+          <Gift size={21} aria-hidden="true" />
+          <span><strong>{period === 'week' ? 'Premiação da semana' : 'Premiação do mês'}</strong><small>{period === 'week' ? 'Ecobag, pin e toalha Levanta' : 'R$ 200, R$ 100 e R$ 50 em Pix'}</small></span>
+          <ChevronDown className={styles.expandIcon} size={20} aria-hidden="true" />
+        </summary>
+        <ol className={styles.prizeGrid}>
+          {period === 'week' ? weeklyPrizes.map((prize, index) => (
+            <li key={prize.kind} className={styles.prizeCard}>
+              <button type="button" className={styles.prizeButton} onClick={() => setSelectedPrize({ ...prize, place: index + 1 })} aria-label={`Ver ${prize.name}, ${index + 1}º lugar`}>
                 <PrizeIllustration kind={prize.kind} />
-                <h3>{prize.name}</h3>
-                <p>{prize.description}</p>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <ol className={styles.prizeGrid}>
-            {[200, 100, 50].map((amount, index) => (
-              <li key={amount} className={styles.prizeCard}>
-                <span className={styles.prizePlace}>{index + 1}º lugar</span>
-                <div className={styles.cashPrize}>
-                  <Medal size={32} aria-hidden="true" />
-                  <strong>{amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}</strong>
-                </div>
-                <h3>Premiação em Pix</h3>
-                <p>Para o {index + 1}º colocado no ranking do mês.</p>
-              </li>
-            ))}
-          </ol>
-        )}
-        <p className={styles.prizeNote}>{period === 'week' ? 'Proposta de premiação. Ilustrações dos produtos para demonstração.' : 'Proposta de premiação mensal em Pix.'}</p>
-      </section>
+                <span className={styles.prizeLabel}><span className={styles.prizePlace}>{index + 1}º lugar</span><strong>{prize.name}</strong><small>Ver prêmio</small></span>
+                <ChevronRight size={18} aria-hidden="true" />
+              </button>
+            </li>
+          )) : [200, 100, 50].map((amount, index) => (
+            <li key={amount} className={styles.prizeCard}>
+              <button type="button" className={styles.prizeButton} onClick={() => setSelectedPrize({ name: `R$ ${amount} em Pix`, description: `Para o ${index + 1}º colocado no ranking do mês.`, place: index + 1, amount })} aria-label={`Ver prêmio de R$ ${amount}, ${index + 1}º lugar`}>
+                <Medal className={styles.cashThumb} size={32} aria-hidden="true" />
+                <span className={styles.prizeLabel}><span className={styles.prizePlace}>{index + 1}º lugar</span><strong>R$ {amount} em Pix</strong><small>Ver prêmio</small></span>
+                <ChevronRight size={18} aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p className={styles.prizeNote}>Proposta de premiação. {period === 'week' ? 'Ilustrações para demonstração.' : 'Premiação mensal em Pix.'}</p>
+      </details>
+
+      <Dialog variant="centered" open={selectedPrize !== null} onClose={() => setSelectedPrize(null)} titleId="prize-title" closeLabel="Fechar prêmio">
+        {selectedPrize && <section className={styles.prizeDetail}>
+          <span className={styles.seasonBadge}>{selectedPrize.place}º lugar · {selectedPrize.kind ? 'Semanal' : 'Mensal'}</span>
+          <div className={styles.detailArt}>
+            {selectedPrize.kind ? <PrizeIllustration kind={selectedPrize.kind} /> : <div className={styles.cashPrize}><Medal size={48} aria-hidden="true" /><strong>R$ {selectedPrize.amount}</strong></div>}
+          </div>
+          <h2 id="prize-title">{selectedPrize.name}</h2>
+          <p>{selectedPrize.description}</p>
+          <p className={styles.prizeNote}>Proposta de premiação{selectedPrize.kind ? '. Ilustração para demonstração.' : ' mensal em Pix.'}</p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => setSelectedPrize(null)}>Voltar ao ranking</button>
+        </section>}
+      </Dialog>
 
       <p className={styles.scope} role="status">
         Mostrando: {scope}
