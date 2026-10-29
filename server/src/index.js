@@ -8,6 +8,7 @@ import { randomBytes, createHash, randomUUID } from 'node:crypto';
 import multer from 'multer';
 import sharp from 'sharp';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { requestLogging, apiErrorHandler, rateLimitHandler, writeLog } from './logging.js';
 import { allowedEmails, text, uuid, player } from './validation.js';
 
 for (const key of ['DATABASE_URL', 'GOOGLE_CLIENT_ID', 'APP_ORIGIN', 'BETA_ALLOWED_EMAILS']) {
@@ -23,27 +24,28 @@ const cookieOptions = { httpOnly: true, secure: production, sameSite: 'lax', pat
 const hash = value => createHash('sha256').update(value).digest('hex');
 const bucket = process.env.BUCKET_NAME;
 const s3 = bucket ? new S3Client({ endpoint: process.env.BUCKET_ENDPOINT, region: process.env.BUCKET_REGION || 'auto', credentials: { accessKeyId: process.env.BUCKET_ACCESS_KEY_ID, secretAccessKey: process.env.BUCKET_SECRET_ACCESS_KEY } }) : null;
-const fail = (status, message) => Object.assign(new Error(message), { status });
+const fail = (status, message, code) => Object.assign(new Error(message), { status, code });
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
+app.use(requestLogging);
 app.use(helmet());
 app.use(cookieParser());
 app.use(express.json({ limit: '16kb' }));
 app.use((req, _res, next) => { req.body ??= {}; next(); });
-app.use('/api', rateLimit({ windowMs: 60_000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false }));
+app.use('/api', rateLimit({ windowMs: 60_000, limit: 180, standardHeaders: 'draft-8', legacyHeaders: false, handler: rateLimitHandler }));
 app.get('/api/health', async (_req, res) => { await pool.query('SELECT 1'); res.json({ ok: true }); });
 // O navegador usa /api na mesma origem, por proxy Vercel/Vite. Mutações exigem a origem exata.
 app.use('/api', (req, _res, next) => {
- if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.get('origin') !== process.env.APP_ORIGIN) return next(fail(403, 'Origem não autorizada.'));
+ if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.get('origin') !== process.env.APP_ORIGIN) return next(fail(403, 'Origem não autorizada.', 'ORIGIN_NOT_ALLOWED'));
  next();
 });
-app.post('/api/auth/google', rateLimit({ windowMs: 60_000, limit: 10 }), async (req, res) => {
+app.post('/api/auth/google', rateLimit({ windowMs: 60_000, limit: 10, handler: rateLimitHandler }), async (req, res) => {
  let payload;
  try {
   const ticket = await google.verifyIdToken({ idToken: text(req.body.credential, 8192), audience: process.env.GOOGLE_CLIENT_ID });
   payload = ticket.getPayload();
- } catch { throw fail(401, 'Não foi possível validar o login com Google.'); }
- if (!payload?.sub || !payload.email_verified || !invited.has(payload.email?.toLowerCase())) throw fail(403, 'Este e-mail ainda não foi convidado para o beta.');
+ } catch { throw fail(401, 'Não foi possível validar o login com Google.', 'GOOGLE_TOKEN_INVALID'); }
+ if (!payload?.sub || !payload.email_verified || !invited.has(payload.email?.toLowerCase())) throw fail(403, 'Este e-mail ainda não foi convidado para o beta.', 'BETA_ACCESS_DENIED');
  const { rows: [user] } = await pool.query('INSERT INTO users(google_sub,email,name) VALUES($1,$2,$3) ON CONFLICT(google_sub) DO UPDATE SET email=EXCLUDED.email,name=EXCLUDED.name RETURNING *', [payload.sub, payload.email.toLowerCase(), (payload.name || 'Jogador').slice(0, 120)]);
  const token = randomBytes(32).toString('hex');
  await pool.query("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES($1,$2,now()+interval '7 days')", [hash(token), user.id]);
@@ -54,9 +56,9 @@ app.post('/api/auth/google', rateLimit({ windowMs: 60_000, limit: 10 }), async (
 app.use('/api', async (req, res, next) => {
  res.set('Cache-Control', 'no-store');
  const token = req.cookies[cookieName];
- if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) throw fail(401, 'Entre para acessar o beta.');
+ if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) throw fail(401, 'Entre para acessar o beta.', 'SESSION_MISSING');
  const { rows: [user] } = await pool.query('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()', [hash(token)]);
- if (!user || !invited.has(user.email.toLowerCase())) throw fail(401, 'Sua sessão expirou ou seu acesso foi removido. Entre novamente.');
+ if (!user || !invited.has(user.email.toLowerCase())) throw fail(401, 'Sua sessão expirou ou seu acesso foi removido. Entre novamente.', 'SESSION_INVALID');
  req.user = user;
  next();
 });
@@ -105,8 +107,8 @@ for (const [path, table] of [['like', 'likes'], ['save', 'saved_posts']]) {
  });
 }
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 0 } });
-app.post('/api/uploads', rateLimit({ windowMs: 60_000, limit: 10 }), upload.single('photo'), async (req, res) => {
- if (!s3) throw fail(503, 'Armazenamento de fotos ainda não configurado.');
+app.post('/api/uploads', rateLimit({ windowMs: 60_000, limit: 10, handler: rateLimitHandler }), upload.single('photo'), async (req, res) => {
+ if (!s3) throw fail(503, 'Armazenamento de fotos ainda não configurado.', 'STORAGE_NOT_CONFIGURED');
  if (!req.file) throw fail(400, 'Envie uma foto de até 5 MB.');
  let output;
  try {
@@ -121,20 +123,16 @@ app.post('/api/uploads', rateLimit({ windowMs: 60_000, limit: 10 }), upload.sing
  res.status(201).json({ uploadId: row.id });
 });
 app.get('/api/media/:id', async (req, res) => {
- if (!s3) throw fail(503, 'Armazenamento indisponível.');
+ if (!s3) throw fail(503, 'Armazenamento indisponível.', 'STORAGE_NOT_CONFIGURED');
  const { rows: [row] } = await pool.query('SELECT object_key FROM uploads WHERE id=$1 AND (user_id=$2 OR EXISTS(SELECT 1 FROM posts WHERE upload_id=$1))', [uuid(req.params.id), req.user.id]);
  if (!row) throw fail(404, 'Foto não encontrada.');
  const object = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: row.object_key }));
  res.set('Content-Type', 'image/webp');
  res.set('Cache-Control', 'private, max-age=300');
- object.Body.on('error', () => res.destroy());
+ object.Body.on('error', error => apiErrorHandler(error, req, res, () => {}));
  object.Body.pipe(res);
 });
-app.use((_req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
-app.use((error, _req, res, _next) => {
- const status = error.status || (error.code === 'LIMIT_FILE_SIZE' ? 413 : error.code === '23503' ? 404 : error.code === '23505' ? 409 : 500);
- if (status >= 500) console.error('API error:', error.code || error.name);
- res.status(status).json({ error: status >= 500 ? 'Não foi possível concluir agora. Tente novamente.' : status === 413 ? 'A foto deve ter até 5 MB.' : error.code === '23503' ? 'Registro não encontrado.' : error.code === '23505' ? 'Este registro já existe.' : error.message });
-});
-const server = app.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => console.log('Levanta API pronta.'));
+app.use((_req, _res, next) => next(fail(404, 'Rota não encontrada.', 'ROUTE_NOT_FOUND')));
+app.use(apiErrorHandler);
+const server = app.listen(Number(process.env.PORT || 3001), '0.0.0.0', () => writeLog('info', 'api_started', { message: 'Levanta API pronta.', port: Number(process.env.PORT || 3001), storageConfigured: Boolean(s3) }));
 process.on('SIGTERM', () => server.close(() => { pool.end().then(() => process.exit(0)); }));
