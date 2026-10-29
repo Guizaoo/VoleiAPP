@@ -7,6 +7,7 @@ import type { Post } from '../../types/social';
 import { CourtImage } from '../CourtImage';
 import { Avatar } from './Avatar';
 import { Dialog } from '../Dialog';
+import { useAccount } from '../LoginGate';
 import styles from './PostCard.module.css';
 
 interface PostCardProps {
@@ -24,6 +25,7 @@ interface PostCardProps {
 const VISIBLE_COMMENTS = 2;
 
 export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSave, onComment, onOpenCourt, onDelete }: PostCardProps) {
+  const { profile } = useAccount();
   const author = socialService.getPlayer(post.playerId);
   const court = post.courtId ? courtsService.getCourt(post.courtId) : undefined;
   const [showAll, setShowAll] = useState(false);
@@ -31,6 +33,7 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
   const [draft, setDraft] = useState('');
   const [status, setStatus] = useState('');
   const [burst, setBurst] = useState(0);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -121,14 +124,9 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
       {post.caption && <p className={styles.caption}>{post.caption}</p>}
 
       {post.image && (
-        <div className={styles.media} onDoubleClick={likeFromImage}>
+        <button type="button" className={styles.media} onClick={() => setPhotoOpen(true)} aria-label={`Ampliar foto de ${author.name}`} aria-haspopup="dialog">
           <CourtImage photo={post.image} />
-          {burst > 0 && (
-            <span key={burst} className={styles.burst} aria-hidden="true">
-              <Volleyball size={84} strokeWidth={1.8} />
-            </span>
-          )}
-        </div>
+        </button>
       )}
 
       <div className={styles.body}>
@@ -214,6 +212,13 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
           </button>
         </form>
       </div>
+      {post.image && <Dialog open={photoOpen} onClose={() => setPhotoOpen(false)} titleId={`${post.id}-photo-title`} closeLabel="Fechar foto ampliada" variant="photo">
+        <h2 id={`${post.id}-photo-title`} className="visually-hidden">Foto de {author.name}</h2>
+        <div className={styles.photoFrame} onDoubleClick={profile ? likeFromImage : undefined}>
+          <CourtImage photo={post.image} priority />
+          {burst > 0 && <span key={burst} className={styles.burst} aria-hidden="true"><Volleyball size={84} strokeWidth={1.8} /></span>}
+        </div>
+      </Dialog>}
       {onDelete && <Dialog open={confirmDelete} onClose={() => {
         if (deleting) return;
         setConfirmDelete(false);
