@@ -139,7 +139,6 @@ export function RankingPage() {
             </li>
           ))}
         </ol>
-        <p className={styles.prizeNote}>Proposta de premiação. {period === 'week' ? 'Ilustrações para demonstração.' : 'Premiação mensal em Pix.'}</p>
       </details>
 
       <Dialog variant="centered" open={selectedPrize !== null} onClose={() => setSelectedPrize(null)} titleId="prize-title" closeLabel="Fechar prêmio">
@@ -150,7 +149,6 @@ export function RankingPage() {
           </div>
           <h2 id="prize-title">{selectedPrize.name}</h2>
           <p>{selectedPrize.description}</p>
-          <p className={styles.prizeNote}>Proposta de premiação{selectedPrize.kind ? '. Ilustração para demonstração.' : ' mensal em Pix.'}</p>
           <button type="button" className="btn btn-primary btn-block" onClick={() => setSelectedPrize(null)}>Voltar ao ranking</button>
         </section>}
       </Dialog>

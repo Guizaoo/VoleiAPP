@@ -100,7 +100,6 @@
 .prizePlace { color: #28543a; font-weight: 700; font-size: 11px; }
 .prizeLabel strong { font-size: 13px; }
 .prizeLabel small { font-size: 11px; color: var(--color-text-subtle); }
-.prizeNote { margin: 12px 16px; font-size: 11px; color: var(--color-text-subtle); }
 .prizeDetail { padding: 48px 24px 24px; text-align: center; }
 .detailArt { display: grid; place-items: center; margin: 24px 0; border-radius: 16px; background: #f7f5ed; }
 .detailArt .prizeArt { width: 100%; max-width: 340px; height: clamp(150px, 26dvh, 220px); }
