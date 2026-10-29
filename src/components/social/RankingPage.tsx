@@ -10,12 +10,49 @@ import { Avatar } from './Avatar';
 import { TrendBadge } from './TrendBadge';
 import styles from './RankingPage.module.css';
 
-const periodOptions = (Object.keys(periodLabels) as RankingPeriod[]).map((value) => ({ value, label: periodLabels[value] }));
+const periodOptions: { value: RankingPeriod; label: string }[] = [
+  { value: 'week', label: 'Semanal' },
+  { value: 'month', label: 'Mensal' },
+];
 const modalityOptions: { value: RankingModality; label: string }[] = [
   { value: 'all', label: 'Todas' },
   { value: 'beach', label: 'Areia' },
   { value: 'indoor', label: 'Quadra' },
 ];
+
+const weeklyPrizes = [
+  { kind: 'bag', name: 'Ecobag Levanta', description: 'Do jogo para o dia a dia. Sua comunidade vai junto.' },
+  { kind: 'pin', name: 'Pin Levanta', description: 'Um detalhe pequeno para uma grande paixão pelo vôlei.' },
+  { kind: 'towel', name: 'Toalha Levanta', description: 'Sua parceira na quadra, na areia e no próximo jogo.' },
+] as const;
+
+function PrizeIllustration({ kind }: { kind: typeof weeklyPrizes[number]['kind'] }) {
+  return (
+    <svg className={styles.prizeArt} viewBox="0 0 240 180" aria-hidden="true">
+      <ellipse cx="120" cy="158" rx="74" ry="9" fill="#173e2a" opacity=".09" />
+      {kind === 'bag' && <>
+        <path d="M78 61V46a42 42 0 0 1 84 0v15" fill="none" stroke="#b6a887" strokeWidth="10" />
+        <path d="M61 54h118l10 101H51Z" fill="#eee2c6" stroke="#cbbd9d" strokeWidth="2" strokeLinejoin="round" />
+        <path d="M70 59 62 149m108-90 8 90" stroke="#d7c9a8" strokeWidth="2" />
+      </>}
+      {kind === 'pin' && <>
+        <circle cx="120" cy="89" r="61" fill="#b39041" />
+        <circle cx="120" cy="86" r="58" fill="#e5c36e" />
+        <circle cx="120" cy="86" r="51" fill="#174c34" stroke="#fff0bb" strokeWidth="2" />
+      </>}
+      {kind === 'towel' && <>
+        <path d="m38 51 148-18 19 115-148 18Z" fill="#1c6241" stroke="#12482f" strokeWidth="2" />
+        <path d="m45 65 143-18m-133 99 143-18" stroke="#cbe4b9" strokeWidth="5" />
+        <path d="m58 166 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7m10-8 1 7" stroke="#81ae8c" strokeWidth="2" />
+      </>}
+      <g fill="none" stroke={kind === 'bag' ? '#205739' : '#f7edce'} strokeWidth="3" strokeLinecap="round">
+        <circle cx="120" cy="88" r="18" />
+        <path d="M120 70c-4 9-3 18 3 27m-20 0c10 1 18-3 25-11m7 11c-7-6-16-8-25-6" />
+      </g>
+      <text x="120" y="125" textAnchor="middle" fill={kind === 'bag' ? '#205739' : '#f7edce'} fontSize="15" fontWeight="800" letterSpacing="2">LEVANTA</text>
+    </svg>
+  );
+}
 
 const podiumOrder = [1, 0, 2]; // 2º, 1º, 3º — o campeão no centro
 
@@ -37,13 +74,31 @@ export function RankingPage() {
         <h1 id="ranking-title" className={styles.title}>
           Ranking
         </h1>
-        <p className={styles.lead}>Quem está jogando mais em {siteConfig.city}.</p>
+        <p className={styles.lead}>Quem movimenta o vôlei dentro e fora das quadras em {siteConfig.city}.</p>
         <p className={styles.notice}>
           <Info size={15} aria-hidden="true" />
           Jogadores e resultados fictícios. Regra ilustrativa: {POINTS_PER_WIN} pontos por vitória + {POINTS_PER_GAME}{' '}
           por partida jogada.
         </p>
       </header>
+
+      <section className={styles.rules} aria-labelledby="ranking-rules-title">
+        <div className={styles.rulesHeading}>
+          <h2 id="ranking-rules-title">Como funciona o ranking</h2>
+          <span className={styles.seasonBadge}>Disputas semanais e mensais</span>
+        </div>
+        <p>Seu jogo conta. Sua participação na comunidade também. A proposta é somar o que você faz na quadra e no feed durante cada torneio.</p>
+        <details className={styles.rulesDetails}>
+          <summary>Ver regras do torneio</summary>
+          <ol className={styles.rulesList}>
+            <li><strong>Jogue e participe.</strong> As partidas disputadas e os resultados entram na pontuação do período.</li>
+            <li><strong>Compartilhe seus jogos.</strong> Sempre que jogar, publique um story ou um post com foto da partida. Os registros dos jogos no feed também fazem parte da proposta de pontuação.</li>
+            <li><strong>Movimente a comunidade.</strong> As interações nas publicações, como reações “Boa!” e comentários, compõem o engajamento considerado no ranking.</li>
+            <li><strong>Dispute a semana e o mês.</strong> Cada semana tem sua classificação e seus prêmios. A disputa mensal considera os pontos acumulados no mês e tem a premiação maior.</li>
+            <li><strong>Conquiste o pódio.</strong> Ao encerrar cada período, a pontuação define a classificação final. Os três primeiros da semana recebem os produtos abaixo. No mês, os prêmios são em Pix: R$ 200 para o 1º lugar, R$ 100 para o 2º e R$ 50 para o 3º.</li>
+          </ol>
+        </details>
+      </section>
 
       <div className={styles.filters}>
         <ChipGroup legend="Período" hideLegend variant="segmented" options={periodOptions} value={period} onChange={setPeriod} />
@@ -56,6 +111,41 @@ export function RankingPage() {
           onChange={setModality}
         />
       </div>
+
+      <section className={styles.prizes} aria-labelledby="prizes-title">
+        <div className={styles.prizesHeading}>
+          <span className={styles.seasonBadge}>{period === 'week' ? 'Toda semana tem conquista' : 'O grande prêmio do mês'}</span>
+          <h2 id="prizes-title">{period === 'week' ? 'Premiação da semana' : 'Premiação do mês'}</h2>
+          <p>{period === 'week' ? 'Três lugares no pódio. Três jeitos de levar o Levanta com você.' : 'A disputa continua ao longo do mês, com uma premiação maior para quem chegar ao topo.'}</p>
+        </div>
+        {period === 'week' ? (
+          <ol className={styles.prizeGrid}>
+            {weeklyPrizes.map((prize, index) => (
+              <li key={prize.kind} className={styles.prizeCard}>
+                <span className={styles.prizePlace}>{index + 1}º lugar</span>
+                <PrizeIllustration kind={prize.kind} />
+                <h3>{prize.name}</h3>
+                <p>{prize.description}</p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <ol className={styles.prizeGrid}>
+            {[200, 100, 50].map((amount, index) => (
+              <li key={amount} className={styles.prizeCard}>
+                <span className={styles.prizePlace}>{index + 1}º lugar</span>
+                <div className={styles.cashPrize}>
+                  <Medal size={32} aria-hidden="true" />
+                  <strong>{amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}</strong>
+                </div>
+                <h3>Premiação em Pix</h3>
+                <p>Para o {index + 1}º colocado no ranking do mês.</p>
+              </li>
+            ))}
+          </ol>
+        )}
+        <p className={styles.prizeNote}>{period === 'week' ? 'Proposta de premiação. Ilustrações dos produtos para demonstração.' : 'Proposta de premiação mensal em Pix.'}</p>
+      </section>
 
       <p className={styles.scope} role="status">
         Mostrando: {scope}
