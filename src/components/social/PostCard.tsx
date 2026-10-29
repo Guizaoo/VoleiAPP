@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Bookmark, EllipsisVertical, MapPin, MessageSquare, Share2, Trash2, Volleyball } from 'lucide-react';
 import { formatCount, formatTimeAgo } from '../../lib/format';
 import { courtsService } from '../../services/courtsService';
@@ -37,12 +37,36 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-  const optionsRef = useRef<HTMLDetailsElement>(null);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const optionsButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const likes = post.likes + (liked ? 1 : 0);
   const hidden = Math.max(0, post.comments.length - VISIBLE_COMMENTS);
   const comments = showAll ? post.comments : post.comments.slice(-VISIBLE_COMMENTS);
   const titleId = `${post.id}-author`;
+
+  useEffect(() => {
+    if (!optionsOpen) return;
+    const closeOutside = (event: Event) => {
+      if (event.target instanceof Node && !optionsRef.current?.contains(event.target)) setOptionsOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setOptionsOpen(false);
+      optionsButtonRef.current?.focus({ preventScroll: true });
+    };
+    // No Safari, clicar num botão pode gerar blur sem relatedTarget antes do click.
+    // Fechar só por interação fora mantém a ação disponível até o click chegar.
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('focusin', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('focusin', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [optionsOpen]);
 
   const submitComment = async (event: FormEvent) => {
     event.preventDefault();
@@ -103,22 +127,15 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
           )}
         </div>
         {post.isLocal && <span className={styles.localTag}>Só você vê</span>}
-        {onDelete && <details className={styles.options} ref={optionsRef} onKeyDown={event => {
-          if (event.key === 'Escape' && optionsRef.current) {
-            optionsRef.current.open = false;
-            optionsRef.current.querySelector('summary')?.focus();
-          }
-        }} onBlur={event => {
-          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.open = false;
-        }}>
-          <summary aria-label="Opções da sua publicação"><EllipsisVertical size={21} aria-hidden="true" /></summary>
-          <div className={styles.optionsPanel}>
+        {onDelete && <div className={styles.options} ref={optionsRef}>
+          <button type="button" className={styles.optionsTrigger} ref={optionsButtonRef} aria-label="Opções da sua publicação" aria-expanded={optionsOpen} aria-controls={`${post.id}-options`} onClick={() => setOptionsOpen(current => !current)}><EllipsisVertical size={21} aria-hidden="true" /></button>
+          <div className={styles.optionsPanel} id={`${post.id}-options`} hidden={!optionsOpen}>
             <button type="button" onClick={() => {
-              if (optionsRef.current) optionsRef.current.open = false;
+              setOptionsOpen(false);
               setDeleteError(''); setConfirmDelete(true);
             }}><Trash2 size={17} aria-hidden="true" />Apagar publicação</button>
           </div>
-        </details>}
+        </div>}
       </header>
 
       {post.caption && <p className={styles.caption}>{post.caption}</p>}
@@ -222,12 +239,12 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
       {onDelete && <Dialog open={confirmDelete} onClose={() => {
         if (deleting) return;
         setConfirmDelete(false);
-        optionsRef.current?.querySelector('summary')?.focus();
+        optionsButtonRef.current?.focus({ preventScroll: true });
       }} titleId={`${post.id}-delete-title`} closeLabel="Fechar confirmação" variant="centered" footer={
         <div className={styles.deleteActions}>
           <button type="button" className="btn btn-secondary" disabled={deleting} onClick={() => {
             setConfirmDelete(false);
-            optionsRef.current?.querySelector('summary')?.focus();
+            optionsButtonRef.current?.focus({ preventScroll: true });
           }}>Cancelar</button>
           <button type="button" className={`btn ${styles.deleteButton}`} disabled={deleting} onClick={deletePublication}>
             {deleting ? 'Apagando…' : 'Apagar publicação'}
