@@ -25,7 +25,7 @@ interface FeedPageProps {
 }
 
 export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
-  const { requireAccount, profile, ready } = useAccount();
+  const { requireAccount, profile, ready, userId } = useAccount();
   const openComposer = () => { if (requireAccount()) setComposerOpen(true); };
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [storyId, setStoryId] = useState<string | null>(null);
@@ -84,6 +84,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
               onToggleSave={() => feed.toggleSave(post.id)}
               onComment={(text) => feed.addComment(post.id, text)}
               onOpenCourt={onOpenCourt}
+              onDelete={profile && post.playerId === (betaEnabled ? userId : visitor.id) ? () => feed.deletePost(post.id) : undefined}
             />
           ))}
 

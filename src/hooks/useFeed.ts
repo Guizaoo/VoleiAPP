@@ -23,10 +23,11 @@ export function useFeed() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(betaEnabled);
   const pending = useRef(new Set<string>());
+  const deletedIds = useRef(new Set<string>());
   const refresh = useCallback(async () => {
     const data = await api<FeedResponse>('/feed');
     registerPlayers(data.players);
-    setPosts(data.posts); setLiked(new Set(data.liked)); setSaved(new Set(data.saved));
+    setPosts(data.posts.filter(post => !deletedIds.current.has(post.id))); setLiked(new Set(data.liked)); setSaved(new Set(data.saved));
   }, []);
   useEffect(() => {
     if (!betaEnabled || !ready) return;
@@ -37,7 +38,7 @@ export function useFeed() {
         const data = await api<FeedResponse>('/feed');
         if (!active) return;
         registerPlayers(data.players);
-        setPosts(data.posts); setLiked(new Set(data.liked)); setSaved(new Set(data.saved)); setError('');
+        setPosts(data.posts.filter(post => !deletedIds.current.has(post.id))); setLiked(new Set(data.liked)); setSaved(new Set(data.saved)); setError('');
       } catch (err) { if (active) setError((err as Error).message); }
       finally { if (active) setLoading(false); }
     };
@@ -120,7 +121,26 @@ export function useFeed() {
     setSeenStories((current) => (current.has(storyId) ? current : new Set(current).add(storyId)));
   }, []);
 
-  return { error, loading, posts, liked, saved, seenStories, toggleLike, likeOnce, toggleSave, addComment, addPost, markStorySeen };
+  const deletePost = async (postId: string) => {
+    if (!requireAccount()) throw new Error('Entre para apagar sua publicação.');
+    const post = posts.find(item => item.id === postId);
+    if (!post || post.playerId !== (betaEnabled ? userId : visitor.id)) {
+      throw new Error('Você só pode apagar suas próprias publicações.');
+    }
+    const key = `delete:${postId}`;
+    if (pending.current.has(key)) return;
+    pending.current.add(key);
+    try {
+      if (betaEnabled) await api(`/posts/${postId}`, { method: 'DELETE' });
+      deletedIds.current.add(postId);
+      setPosts(current => current.filter(item => item.id !== postId));
+      for (const setter of [setLiked, setSaved]) setter(current => {
+        const next = new Set(current); next.delete(postId); return next;
+      });
+    } finally { pending.current.delete(key); }
+  };
+
+  return { error, loading, posts, liked, saved, seenStories, toggleLike, likeOnce, toggleSave, addComment, addPost, deletePost, markStorySeen };
 }
 
 export type FeedState = ReturnType<typeof useFeed>;
