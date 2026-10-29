@@ -30,6 +30,7 @@ export function Footer({ onNavigate }: FooterProps) {
                 </a>
               </li>
             ))}
+            <li><a href="/privacidade.html">Política de Privacidade</a></li>
             {sectionLinks.map(({ hash, label }) => (
               <li key={hash}>
                 <a href={`/${hash}`} onClick={(e) => handleRouteClick(e, () => onNavigate('quadras', hash))}>
