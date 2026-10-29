@@ -15,7 +15,7 @@ interface PostCardProps {
   onToggleLike: () => void;
   onLike: () => void;
   onToggleSave: () => void;
-  onComment: (text: string) => void;
+  onComment: (text: string) => Promise<void>;
   onOpenCourt: (courtId: string) => void;
 }
 
@@ -25,6 +25,7 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
   const author = socialService.getPlayer(post.playerId);
   const court = post.courtId ? courtsService.getCourt(post.courtId) : undefined;
   const [showAll, setShowAll] = useState(false);
+  const [sending, setSending] = useState(false);
   const [draft, setDraft] = useState('');
   const [status, setStatus] = useState('');
   const [burst, setBurst] = useState(0);
@@ -34,13 +35,14 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
   const comments = showAll ? post.comments : post.comments.slice(-VISIBLE_COMMENTS);
   const titleId = `${post.id}-author`;
 
-  const submitComment = (event: FormEvent) => {
+  const submitComment = async (event: FormEvent) => {
     event.preventDefault();
     const text = draft.trim();
-    if (!text) return;
-    onComment(text);
-    setDraft('');
-    setShowAll(true);
+    if (!text || sending) return;
+    setSending(true);
+    try { await onComment(text); setDraft(''); setShowAll(true); setStatus(''); }
+    catch (err) { setStatus((err as Error).message); }
+    finally { setSending(false); }
   };
 
   const share = async () => {
@@ -176,7 +178,7 @@ export function PostCard({ post, liked, saved, onToggleLike, onLike, onToggleSav
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
-          <button type="submit" disabled={!draft.trim()}>
+          <button type="submit" disabled={!draft.trim() || sending}>
             Enviar
           </button>
         </form>

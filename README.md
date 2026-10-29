@@ -1,6 +1,10 @@
 # Levanta — protótipo de aluguel de quadras de vôlei
 
-## Acesso local com nome e celular
+## Beta 1 com contas reais
+
+A base de integração está em `server/`: Express + PostgreSQL no Railway, bucket privado de fotos e login Google. O React continua na Vercel. Consulte [o guia de configuração do beta](docs/BETA-1.md) para variáveis, passos nos painéis, deploy e testes. A integração só é ativada com `VITE_BETA_ENABLED=true`; sem a flag, permanece a demonstração local descrita abaixo.
+
+## Acesso local com nome e celular (demonstração)
 
 A entrada solicita nome, sobrenome e celular com DDD 98 (11 dígitos, com nono dígito 9), aceitando também o prefixo +55. Nomes aceitam acentos, espaços, apóstrofos e hífens. O perfil fica em `sessionStorage` nesta aba e pode ser encerrado em **Sair**. O nome aparece nas postagens e comentários; o celular não é incluído nos dados públicos do feed. As interações continuam temporárias e são reiniciadas ao sair ou recarregar.
 
@@ -13,11 +17,11 @@ Landing page navegável, com cara de aplicativo, para validar a ideia de uma pla
 - React 18 + TypeScript + Vite 6
 - CSS com variáveis (tokens) + CSS Modules
 - Ícones: `lucide-react`
-- Sem back-end, sem banco de dados, sem variáveis de ambiente
+- Modo demonstração independente; backend e banco opcionais para o beta
 
 ## Como rodar
 
-Requisitos: Node.js 18.18+ (recomendado 20 ou 22) e npm.
+Requisitos: Node.js 22+ e npm (site e API).
 
 ```bash
 npm install        # instala as dependências
@@ -34,7 +38,7 @@ npm run preview    # serve o build localmente (http://localhost:4173)
 3. A Vercel detecta Vite automaticamente. As configurações já estão em `vercel.json`:
    - Build command: `npm run build`
    - Output directory: `dist`
-4. Clique em **Deploy**. Nenhuma variável de ambiente é necessária.
+4. Clique em **Deploy**. No modo demonstração, nenhuma variável é necessária. Para o beta com API, siga `docs/BETA-1.md` antes de ativar a flag.
 
 Pela linha de comando: `npx vercel` (prévia) e `npx vercel --prod` (produção).
 

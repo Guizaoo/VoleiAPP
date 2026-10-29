@@ -3,6 +3,9 @@ import { posts, stories } from '../data/posts';
 import { computeRanking } from '../lib/ranking';
 import type { Player, Post, RankingEntry, RankingModality, RankingPeriod, Story } from '../types/social';
 
+const remotePlayers = new Map<string, Player>();
+export function registerPlayers(users: Player[]) { for (const user of users) remotePlayers.set(user.id, user); }
+
 /** Perfil usado quando o visitante cria uma postagem ou comentário na demonstração. */
 export const visitor: Player = {
   id: 'voce',
@@ -31,7 +34,7 @@ export const socialService = {
     return stories;
   },
   getPlayer(playerId: string): Player {
-    return playerId === visitor.id ? visitor : playersById[playerId];
+    return remotePlayers.get(playerId) ?? (playerId === visitor.id ? visitor : playersById[playerId]) ?? { ...visitor, id: playerId, name: 'Jogador', handle: 'jogador' };
   },
   getRanking(modality: RankingModality, period: RankingPeriod): RankingEntry[] {
     return computeRanking(players, modality, period);
