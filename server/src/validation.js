@@ -1,3 +1,16 @@
+// Cadastro fechado por padrão. Só o valor literal true abre o acesso.
+export function accessPolicy(env) {
+ const setting = env.PUBLIC_SIGNUP_ENABLED ?? 'false';
+ if (!['true', 'false'].includes(setting)) throw new Error('PUBLIC_SIGNUP_ENABLED deve ser true ou false.');
+ const publicSignup = setting === 'true';
+ const invited = allowedEmails(env.BETA_ALLOWED_EMAILS);
+ if (!publicSignup && !invited.size) throw new Error('Configure BETA_ALLOWED_EMAILS ou ative PUBLIC_SIGNUP_ENABLED=true.');
+ return {
+  publicSignup,
+  allows: email => typeof email === 'string' && email.trim().length > 0 && (publicSignup || invited.has(email.toLowerCase())),
+ };
+}
+
 export function allowedEmails(value) {
  return new Set((value ?? '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean));
 }

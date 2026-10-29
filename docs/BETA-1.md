@@ -146,3 +146,15 @@ Cada requisição gera uma linha JSON com timestamp UTC, level (info/warn/error)
 Exemplos de códigos: STORAGE_NOT_CONFIGURED (bucket ausente), ORIGIN_NOT_ALLOWED (APP_ORIGIN diferente), SESSION_MISSING, GOOGLE_TOKEN_INVALID e 42P01 (tabelas ausentes). Filtre pelo requestId para relacionar erro e término da requisição. O ID vai no cabeçalho X-Request-ID e na resposta de erro; o frontend mostra a referência junto da mensagem.
 
 Não são registrados cookies, tokens, credenciais, e-mails, IPs, corpo das publicações, query strings ou mensagens brutas de bibliotecas. Rotas conhecidas usam templates sem IDs de posts; caminhos desconhecidos aparecem como unmatched. O rate limit também responde JSON com código RATE_LIMITED. Não é preciso adicionar variáveis para ativar os logs.
+
+## Cadastro aberto (opcional)
+
+O modo padrão permanece fechado. Para permitir que qualquer pessoa entre com uma conta Google e e-mail verificado, configure na API Railway `PUBLIC_SIGNUP_ENABLED=true` e faça deploy. Nesse modo BETA_ALLOWED_EMAILS deixa de restringir o acesso; pode ficar preenchida para facilitar voltar ao modo fechado. O feed/fotos continuam exigindo login. Não há leitura anônima.
+
+Para fechar novamente, use `PUBLIC_SIGNUP_ENABLED=false`, preencha BETA_ALLOWED_EMAILS e faça deploy. Contas fora da lista voltam a ser recusadas inclusive com sessões anteriores. A validação do token Google, sessão, autoria, proteção de origem e limites de requisição permanecem ativos.
+
+No Google Auth Platform, confira Público-alvo → status de publicação → Publicar app / Em produção. Mantenha público Externo e a origem JavaScript da Vercel. A configuração usa somente identidade básica. Atenda às solicitações de branding/verificação que o painel apresentar. Para escopos básicos (openid/email/profile), a documentação Google prevê exceção à lista de usuários de teste; a lista no nosso backend continua sendo independente disso.
+
+Referência: https://developers.google.com/identity/protocols/oauth2/production-readiness/overview
+
+O cadastro aberto não ativa o bucket de fotos: configure o armazenamento antes de convidar pessoas para publicar imagens. Os limites funcionais anteriores continuam válidos (ranking/stories demonstrativos, sem moderação administrativa nesta etapa).

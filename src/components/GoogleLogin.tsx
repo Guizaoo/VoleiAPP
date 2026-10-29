@@ -44,6 +44,6 @@ export function GoogleLogin({ onSuccess }: { onSuccess: (user: Player) => void }
     {googleClientId ? <div ref={button} aria-label="Continuar com Google" style={{ pointerEvents: busy ? 'none' : undefined }} /> : <p role="status">O login Google ainda precisa ser configurado para este ambiente.</p>}
     {busy && <p role="status">Entrando…</p>}
     {error && <p role="alert">{error}</p>}
-    <p style={{ fontSize: 12, marginTop: 16 }}>Beta fechado: use o e-mail que recebeu o convite.</p>
+    <p style={{ fontSize: 12, marginTop: 16 }}>Use sua conta Google para entrar no Levanta.</p>
   </div>;
 }
