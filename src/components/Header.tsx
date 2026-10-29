@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
-import { LayoutGrid, Newspaper, Search, Trophy } from 'lucide-react';
+import { LayoutGrid, Newspaper, Trophy, UserRound } from 'lucide-react';
+import { useAccount } from './LoginGate';
 import { routePaths, type Route } from '../hooks/useRoute';
 import { Logo } from './Logo';
 import styles from './Header.module.css';
@@ -13,7 +14,6 @@ export const tabs: { route: Route; label: string; icon: typeof LayoutGrid }[] = 
 interface HeaderProps {
   route: Route;
   onNavigate: (route: Route) => void;
-  onFindCourt: () => void;
 }
 
 /** Abre a rota no app sem recarregar; Ctrl/Cmd+clique continua abrindo em nova aba. */
@@ -23,7 +23,8 @@ export function handleRouteClick(event: MouseEvent<HTMLAnchorElement>, go: () =>
   go();
 }
 
-export function Header({ route, onNavigate, onFindCourt }: HeaderProps) {
+export function Header({ route, onNavigate }: HeaderProps) {
+  const { profile, openLogin, logout } = useAccount();
   const nav = (
     <ul className={styles.tabs}>
       {tabs.map(({ route: tab, label, icon: Icon }) => (
@@ -58,10 +59,14 @@ export function Header({ route, onNavigate, onFindCourt }: HeaderProps) {
           {nav}
         </nav>
 
-        <button type="button" className={`btn btn-primary ${styles.cta}`} onClick={onFindCourt}>
-          <Search size={18} aria-hidden="true" />
-          <span>Encontrar quadra</span>
-        </button>
+        <div className={styles.actions}>
+        {profile ? <div className={styles.account}>
+          <span className={styles.accountName} title={profile.firstName}><UserRound size={18} aria-hidden="true" />{profile.firstName}</span>
+          <button type="button" className="btn btn-ghost" onClick={logout}>Sair</button>
+        </div> : <button type="button" className={`btn btn-secondary ${styles.login}`} onClick={openLogin} aria-haspopup="dialog">
+          <UserRound size={18} aria-hidden="true" /><span>Entrar / Registrar</span>
+        </button>}
+        </div>
       </div>
 
       <nav className={styles.mobileNav} aria-label="Principal">

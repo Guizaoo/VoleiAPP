@@ -1,5 +1,11 @@
 # Levanta — protótipo de aluguel de quadras de vôlei
 
+## Acesso local com nome e celular
+
+A entrada solicita nome, sobrenome e celular com DDD 98 (11 dígitos, com nono dígito 9), aceitando também o prefixo +55. Nomes aceitam acentos, espaços, apóstrofos e hífens. O perfil fica em `sessionStorage` nesta aba e pode ser encerrado em **Sair**. O nome aparece nas postagens e comentários; o celular não é incluído nos dados públicos do feed. As interações continuam temporárias e são reiniciadas ao sair ou recarregar.
+
+**Este fluxo não autentica uma conta real:** valida apenas o formato do telefone e rejeita sequências repetidas. Não confirma existência, titularidade ou recebimento de SMS. Para produção, é necessário um serviço de OTP por SMS, verificação no servidor e sessão autenticada; o armazenamento local não é uma barreira de segurança.
+
 Landing page navegável, com cara de aplicativo, para validar a ideia de uma plataforma onde a pessoa encontra quadras de vôlei, vê fotos, preços e horários livres e **simula** uma reserva sem precisar esperar resposta no WhatsApp.
 
 > **Levanta** é um nome provisório. A cidade configurada é **São Luís – MA**. Os locais listados foram encontrados em fontes públicas (reportagens e guias), mas **fotos, preços, horários, regras e disponibilidade são ilustrativos** e não há parceria com nenhum deles.

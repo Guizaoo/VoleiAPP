@@ -101,7 +101,7 @@ export default function App() {
       <a href="#conteudo" className="skip-link">
         Pular para o conteúdo
       </a>
-      <Header route={route} onNavigate={(next) => go(next)} onFindCourt={goToExplorer} />
+      <Header route={route} onNavigate={(next) => go(next)} />
       {route === 'feed' && (
         <FeedPage feed={feed} onOpenCourt={(id) => openCourt(id)} onSeeRanking={() => go('ranking')} />
       )}

@@ -71,6 +71,14 @@
   display: none;
 }
 
+.actions, .account { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.accountName { display: inline-flex; align-items: center; gap: 6px; max-width: 120px; overflow: hidden; white-space: nowrap; font-size: var(--text-sm); }
+.login { padding-inline: 12px; font-size: var(--text-sm); }
+@media (max-width: 599px) {
+  .actions .cta { display: none; }
+  .accountName { max-width: 95px; }
+}
+
 /* Celular: abas ocupando a largura toda, logo abaixo da marca. */
 .mobileNav {
   border-top: 1px solid var(--color-surface-muted);
