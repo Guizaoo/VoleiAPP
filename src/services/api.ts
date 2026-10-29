@@ -9,7 +9,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     headers: options.body instanceof FormData ? options.headers : { 'Content-Type': 'application/json', ...options.headers },
   });
   const body = await response.json().catch(() => ({ error: 'Não foi possível conectar ao servidor.' }));
-  if (!response.ok) throw new Error(body.error || 'Não foi possível concluir. Tente novamente.');
+  if (!response.ok) {
+    const requestId = response.headers.get('X-Request-ID');
+    const message = body.error || 'Não foi possível concluir. Tente novamente.';
+    throw new Error(requestId ? `${message} (Referência: ${requestId})` : message);
+  }
   return body as T;
 }
 export interface FeedResponse { posts: Post[]; players: Player[]; liked: string[]; saved: string[] }

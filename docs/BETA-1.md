@@ -138,3 +138,11 @@ Os testes locais automatizados não substituem o teste final com Google, Postgre
 - https://docs.railway.com/databases/postgresql
 - https://docs.railway.com/storage-buckets
 - https://vercel.com/docs/routing/rewrites
+
+## Logs estruturados no Railway
+
+Cada requisição gera uma linha JSON com timestamp UTC, level (info/warn/error), event, requestId, method, route, statusCode e durationMs. Quando autenticado, inclui userId interno. Respostas 4xx são warn; 5xx são error. Falhas geram também api_request_failed com code, reason e localização no código próprio quando disponível. Requisições interrompidas geram http_request_aborted, status 499.
+
+Exemplos de códigos: STORAGE_NOT_CONFIGURED (bucket ausente), ORIGIN_NOT_ALLOWED (APP_ORIGIN diferente), SESSION_MISSING, GOOGLE_TOKEN_INVALID e 42P01 (tabelas ausentes). Filtre pelo requestId para relacionar erro e término da requisição. O ID vai no cabeçalho X-Request-ID e na resposta de erro; o frontend mostra a referência junto da mensagem.
+
+Não são registrados cookies, tokens, credenciais, e-mails, IPs, corpo das publicações, query strings ou mensagens brutas de bibliotecas. Rotas conhecidas usam templates sem IDs de posts; caminhos desconhecidos aparecem como unmatched. O rate limit também responde JSON com código RATE_LIMITED. Não é preciso adicionar variáveis para ativar os logs.
