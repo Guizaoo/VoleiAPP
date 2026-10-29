@@ -1,7 +1,11 @@
-import { createContext, useCallback, useContext, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { normalizeName, normalizePhone, validateProfile, type LocalProfile } from '../lib/login';
 import { setVisitorProfile } from '../services/socialService';
 import { ArrowRight, UserRound, Phone, Volleyball } from 'lucide-react';
+import { api, betaEnabled } from '../services/api';
+import type { Player } from '../types/social';
+import { GoogleLogin } from './GoogleLogin';
+import { registerPlayers, visitor } from '../services/socialService';
 import { Logo } from './Logo';
 import { Dialog } from './Dialog';
 import styles from './LoginGate.module.css';
@@ -10,6 +14,8 @@ const SESSION_KEY = 'levanta.local-profile.v1';
 
 interface AccountState {
   profile: LocalProfile | null;
+  userId: string | null;
+  ready: boolean;
   openLogin: () => void;
   logout: () => void;
   requireAccount: () => boolean;
@@ -36,7 +42,23 @@ function readProfile(): LocalProfile | null {
 }
 
 export function LoginGate({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<LocalProfile | null>(readProfile);
+  const [profile, setProfile] = useState<LocalProfile | null>(() => betaEnabled ? null : readProfile());
+  const [userId, setUserId] = useState<string | null>(null);
+  const [ready, setReady] = useState(!betaEnabled);
+  const acceptUser = useCallback((user: Player) => {
+    registerPlayers([user]);
+    Object.assign(visitor, user);
+    const [firstName, ...rest] = user.name.split(' ');
+    setProfile({ firstName, lastName: rest.join(' '), phone: '' });
+    setUserId(user.id);
+    setOpen(false);
+  }, []);
+  useEffect(() => {
+    if (!betaEnabled) return;
+    let active = true;
+    api<{ user: Player }>('/auth/me').then(({ user }) => { if (active) acceptUser(user); }).catch(() => {}).finally(() => { if (active) setReady(true); });
+    return () => { active = false; };
+  }, [acceptUser]);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -47,7 +69,13 @@ export function LoginGate({ children }: { children: ReactNode }) {
     setOpen(true);
     return false;
   }, [profile]);
-  const logout = () => {
+  const logout = async () => {
+    if (betaEnabled) {
+      try { await api('/auth/logout', { method: 'POST' }); }
+      catch { setError('Não foi possível sair. Tente novamente.'); setOpen(true); return; }
+      setUserId(null);
+      visitor.id = 'voce';
+    }
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* Encerra também em memória. */ }
     setVisitorProfile('Você');
     setProfile(null);
@@ -77,17 +105,18 @@ export function LoginGate({ children }: { children: ReactNode }) {
     setPhone('');
   };
 
-  return <AccountContext.Provider value={{ profile, openLogin, logout, requireAccount }}>
-    <div key={profile?.phone ?? 'guest'}>{children}</div>
+  return <AccountContext.Provider value={{ profile, userId, ready, openLogin, logout, requireAccount }}>
+    <div key={userId ?? profile?.phone ?? 'guest'}>{children}</div>
     <Dialog open={open} onClose={() => { setOpen(false); setError(''); }} titleId="login-title" closeLabel="Fechar entrada">
     <section className={styles.content} aria-labelledby="login-title">
       <header className={styles.header}><Logo /></header>
       <div className={styles.intro}>
         <span className={styles.eyebrow}><Volleyball size={16} aria-hidden="true" /> Seu próximo jogo começa aqui</span>
         <h2 id="login-title">Entre para a comunidade</h2>
-        <p>Encontre sua turma e faça parte do jogo. Para começar, conte um pouco sobre você.</p>
+        <p>{betaEnabled ? 'Entre com sua conta Google para compartilhar seus jogos com a comunidade.' : 'Encontre sua turma e faça parte do jogo. Para começar, conte um pouco sobre você.'}</p>
       </div>
-      <form onSubmit={submit} className={styles.form}>
+      {betaEnabled && error && <p role="alert" className={styles.error}>{error}</p>}
+      {betaEnabled ? <GoogleLogin onSuccess={acceptUser} /> : <form onSubmit={submit} className={styles.form}>
         <div className={styles.field}>
           <label htmlFor="full-name">Nome completo</label>
           <div className={styles.inputWrap}>
@@ -105,7 +134,7 @@ export function LoginGate({ children }: { children: ReactNode }) {
         </div>
         {error && <p id="login-error" role="alert" className={styles.error}>{error}</p>}
         <button type="submit" className={`btn btn-primary btn-block ${styles.submit}`}>Entrar no Levanta <ArrowRight size={19} aria-hidden="true" /></button>
-      </form>
+      </form>}
       <div className={styles.footer}><span aria-hidden="true" className={styles.statusDot} /> Mais gente na quadra. Mais jogo na sua vida.</div>
     </section>
     </Dialog>

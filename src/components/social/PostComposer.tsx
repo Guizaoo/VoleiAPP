@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type ChangeEvent } from 'react';
 import { AlertCircle, ImagePlus, Info } from 'lucide-react';
+import { betaEnabled } from '../../services/api';
 import { photos } from '../../data/photos';
 import type { NewPostInput } from '../../hooks/useFeed';
 import { courtsService } from '../../services/courtsService';
@@ -12,11 +13,12 @@ const MAX_CAPTION = 300;
 
 interface PostComposerProps {
   onClose: () => void;
-  onPublish: (input: NewPostInput) => void;
+  onPublish: (input: NewPostInput) => Promise<void>;
 }
 
-/** Criação de postagem simulada: a foto escolhida não sai do navegador. */
+/** Compositor com prévia local e publicação pela API no beta. */
 export function PostComposer({ onClose, onPublish }: PostComposerProps) {
+  const [publishing, setPublishing] = useState(false);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState<PostImage | undefined>();
   const [courtId, setCourtId] = useState('');
@@ -24,16 +26,16 @@ export function PostComposer({ onClose, onPublish }: PostComposerProps) {
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const ids = useId();
 
-  // Libera a URL temporária da foto enviada quando ela não é mais usada.
+  // No beta, a publicação já tem a cópia no servidor ao fechar o compositor.
   useEffect(() => () => {
-    if (uploadedUrl && image?.src !== uploadedUrl) URL.revokeObjectURL(uploadedUrl);
-  }, [uploadedUrl, image]);
+    if (uploadedUrl && betaEnabled) URL.revokeObjectURL(uploadedUrl);
+  }, [uploadedUrl]);
 
   const onFile = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Escolha um arquivo de imagem (JPG, PNG ou WebP).');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setError('Escolha uma foto JPG, PNG ou WebP de até 5 MB.');
       return;
     }
     const url = URL.createObjectURL(file);
@@ -42,27 +44,29 @@ export function PostComposer({ onClose, onPublish }: PostComposerProps) {
     setError(null);
   };
 
-  const publish = () => {
+  const publish = async () => {
+    if (publishing) return;
     if (!image && !caption.trim()) {
       setError('Adicione uma foto ou escreva uma legenda para publicar.');
       return;
     }
-    onPublish({
+    setPublishing(true);
+    try { await onPublish({
       caption: caption.trim(),
       image: image ? { ...image, alt: image.alt || caption.trim() } : undefined,
       courtId: courtId || undefined,
-    });
+    }); } catch (err) { setError((err as Error).message); } finally { setPublishing(false); }
   };
 
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={() => { if (!publishing) onClose(); }}
       titleId={`${ids}-title`}
       closeLabel="Fechar nova postagem"
       footer={
-        <button type="button" className="btn btn-primary btn-block btn-lg" onClick={publish}>
-          Publicar (demonstração)
+        <button type="button" className="btn btn-primary btn-block btn-lg" onClick={publish} disabled={publishing}>
+          {publishing ? 'Publicando…' : betaEnabled ? 'Publicar' : 'Publicar (demonstração)'}
         </button>
       }
     >
@@ -90,7 +94,7 @@ export function PostComposer({ onClose, onPublish }: PostComposerProps) {
           <input id={`${ids}-file`} type="file" accept="image/*" className="visually-hidden" onChange={onFile} />
         </div>
 
-        <fieldset className={styles.samples}>
+        {!betaEnabled && <fieldset className={styles.samples}>
           <legend>Ou use uma foto de exemplo</legend>
           <div className={styles.sampleGrid}>
             {samplePhotos.map((photo) => (
@@ -110,7 +114,7 @@ export function PostComposer({ onClose, onPublish }: PostComposerProps) {
               </label>
             ))}
           </div>
-        </fieldset>
+        </fieldset>}
 
         <div className={styles.field}>
           <label htmlFor={`${ids}-caption`} className={styles.label}>
@@ -156,7 +160,7 @@ export function PostComposer({ onClose, onPublish }: PostComposerProps) {
 
         <p className={styles.note}>
           <Info size={16} aria-hidden="true" />
-          Demonstração: a postagem aparece só para você, neste navegador, e some ao recarregar a página. Nada é enviado.
+          {betaEnabled ? 'Sua publicação ficará visível para os participantes do beta.' : 'Demonstração: a postagem aparece só para você e some ao recarregar a página.'}
         </p>
       </div>
     </Dialog>

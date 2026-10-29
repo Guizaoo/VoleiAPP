@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
-import { socialService, visitor } from '../services/socialService';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { socialService, visitor, registerPlayers } from '../services/socialService';
 import type { Post, PostImage } from '../types/social';
+import { api, betaEnabled, type FeedResponse } from '../services/api';
 import { useAccount } from '../components/LoginGate';
 
 export interface NewPostInput {
@@ -10,15 +11,48 @@ export interface NewPostInput {
 }
 
 /**
- * Estado do feed durante a visita: curtidas, salvos, comentários e postagens
- * do visitante. Nada é enviado nem persistido — recarregar a página zera tudo.
+ * No beta, usa a API persistente. Sem configuração, mantém a demonstração em memória.
  */
 export function useFeed() {
-  const { requireAccount } = useAccount();
-  const [posts, setPosts] = useState<Post[]>(() => socialService.listPosts());
+  const { requireAccount, userId, ready } = useAccount();
+  const [posts, setPosts] = useState<Post[]>(() => betaEnabled ? [] : socialService.listPosts());
   const [liked, setLiked] = useState<Set<string>>(() => new Set());
   const [saved, setSaved] = useState<Set<string>>(() => new Set());
   const [seenStories, setSeenStories] = useState<Set<string>>(() => new Set());
+
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(betaEnabled);
+  const pending = useRef(new Set<string>());
+  const refresh = useCallback(async () => {
+    const data = await api<FeedResponse>('/feed');
+    registerPlayers(data.players);
+    setPosts(data.posts); setLiked(new Set(data.liked)); setSaved(new Set(data.saved));
+  }, []);
+  useEffect(() => {
+    if (!betaEnabled || !ready) return;
+    if (!userId) { setLoading(false); return; }
+    let active = true;
+    const load = async () => {
+      try {
+        const data = await api<FeedResponse>('/feed');
+        if (!active) return;
+        registerPlayers(data.players);
+        setPosts(data.posts); setLiked(new Set(data.liked)); setSaved(new Set(data.saved)); setError('');
+      } catch (err) { if (active) setError((err as Error).message); }
+      finally { if (active) setLoading(false); }
+    };
+    void load();
+    const timer = window.setInterval(() => { if (!document.hidden && !pending.current.size) void load(); }, 30_000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [userId, ready]);
+  const remoteToggle = async (id: string, kind: 'like' | 'save', active: boolean) => {
+    const key = `${kind}:${id}`;
+    if (pending.current.has(key)) return;
+    pending.current.add(key); setError('');
+    try { await api(`/posts/${id}/${kind}`, { method: 'PUT', body: JSON.stringify({ active }) }); await refresh(); }
+    catch (err) { setError((err as Error).message); }
+    finally { pending.current.delete(key); }
+  };
 
   const toggleIn = (setter: typeof setLiked) => (id: string) => {
     if (!requireAccount()) return;
@@ -30,16 +64,21 @@ export function useFeed() {
     });
   };
 
-  const toggleLike = useCallback(toggleIn(setLiked), [requireAccount]);
-  const toggleSave = useCallback(toggleIn(setSaved), [requireAccount]);
+  const toggleLike = (id: string) => { if (!requireAccount()) return; if (betaEnabled) void remoteToggle(id, 'like', !liked.has(id)); else toggleIn(setLiked)(id); };
+  const toggleSave = (id: string) => { if (!requireAccount()) return; if (betaEnabled) void remoteToggle(id, 'save', !saved.has(id)); else toggleIn(setSaved)(id); };
 
-  const likeOnce = useCallback((id: string) => {
+  const likeOnce = (id: string) => {
     if (!requireAccount()) return;
+    if (betaEnabled) { void remoteToggle(id, 'like', true); return; }
     setLiked((current) => (current.has(id) ? current : new Set(current).add(id)));
-  }, [requireAccount]);
+  };
 
-  const addComment = useCallback((postId: string, text: string) => {
-    if (!requireAccount()) return;
+  const addComment = async (postId: string, text: string) => {
+    if (!requireAccount()) throw new Error('Entre para enviar seu comentário.');
+    if (betaEnabled) {
+      await api(`/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ text }) });
+      await refresh(); return;
+    }
     setPosts((current) =>
       current.map((post) =>
         post.id === postId
@@ -47,10 +86,21 @@ export function useFeed() {
           : post,
       ),
     );
-  }, [requireAccount]);
+  };
 
-  const addPost = useCallback((input: NewPostInput) => {
-    if (!requireAccount()) return '';
+  const addPost = async (input: NewPostInput) => {
+    if (!requireAccount()) throw new Error('Entre para publicar.');
+    if (betaEnabled) {
+      let uploadId: string | undefined;
+      if (input.image) {
+        if (!input.image.src.startsWith('blob:')) throw new Error('Escolha uma foto do seu aparelho.');
+        const response = await fetch(input.image.src);
+        const form = new FormData(); form.append('photo', await response.blob(), 'photo');
+        ({ uploadId } = await api<{ uploadId: string }>('/uploads', { method: 'POST', body: form }));
+      }
+      const { id } = await api<{ id: string }>('/posts', { method: 'POST', body: JSON.stringify({ caption: input.caption, courtId: input.courtId, uploadId }) });
+      await refresh(); return id;
+    }
     const post: Post = {
       id: `local-${Date.now()}`,
       playerId: visitor.id,
@@ -64,13 +114,13 @@ export function useFeed() {
     };
     setPosts((current) => [post, ...current]);
     return post.id;
-  }, [requireAccount]);
+  };
 
   const markStorySeen = useCallback((storyId: string) => {
     setSeenStories((current) => (current.has(storyId) ? current : new Set(current).add(storyId)));
   }, []);
 
-  return { posts, liked, saved, seenStories, toggleLike, likeOnce, toggleSave, addComment, addPost, markStorySeen };
+  return { error, loading, posts, liked, saved, seenStories, toggleLike, likeOnce, toggleSave, addComment, addPost, markStorySeen };
 }
 
 export type FeedState = ReturnType<typeof useFeed>;

@@ -10,6 +10,7 @@ import { RankingWidget } from './RankingWidget';
 import { StoriesBar } from './StoriesBar';
 import { StoryViewer } from './StoryViewer';
 import styles from './FeedPage.module.css';
+import { betaEnabled } from '../../services/api';
 import { useAccount } from '../LoginGate';
 
 function sortStories(seen: Set<string>) {
@@ -24,7 +25,7 @@ interface FeedPageProps {
 }
 
 export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
-  const { requireAccount } = useAccount();
+  const { requireAccount, profile, ready } = useAccount();
   const openComposer = () => { if (requireAccount()) setComposerOpen(true); };
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const [storyId, setStoryId] = useState<string | null>(null);
@@ -48,6 +49,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
 
       <div className={styles.layout}>
         <div className={styles.stories}>
+          {betaEnabled && <small>Stories de demonstração</small>}
           <StoriesBar
             stories={stories}
             seen={feed.seenStories}
@@ -57,6 +59,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
         </div>
 
         <aside className={styles.side}>
+          {betaEnabled && <small>Ranking de demonstração</small>}
           <RankingWidget entries={ranking} onSeeAll={onSeeRanking} limit={isDesktop ? 5 : 3} />
         </aside>
 
@@ -67,6 +70,9 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
             <ImagePlus size={22} aria-hidden="true" />
           </button>
 
+          {betaEnabled && !profile && ready && <p>Entre com Google para ver as publicações do beta.</p>}
+          {feed.loading && <p role="status">Carregando publicações…</p>}
+          {feed.error && <p role="alert">{feed.error}</p>}
           {feed.posts.map((post) => (
             <PostCard
               key={post.id}
@@ -81,7 +87,7 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
             />
           ))}
 
-          <p className={styles.end}>Você viu todas as postagens.</p>
+          {!feed.loading && !feed.error && (!betaEnabled || profile) && <p className={styles.end}>{feed.posts.length ? 'Você viu todas as postagens.' : 'O primeiro jogo compartilhado pode ser o seu. Publique para começar!'}</p>}
         </div>
       </div>
 
@@ -92,8 +98,8 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
       {composerOpen && (
         <PostComposer
           onClose={() => setComposerOpen(false)}
-          onPublish={(input) => {
-            const id = feed.addPost(input);
+          onPublish={async (input) => {
+            const id = await feed.addPost(input);
             setComposerOpen(false);
             // Mostra a postagem recém-criada no topo da lista.
             window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
