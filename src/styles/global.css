@@ -154,6 +154,16 @@ button {
   cursor: pointer;
 }
 
+/* Mantém a leitura e evita zoom automático ao editar campos no celular.
+   O zoom manual do navegador continua disponível. */
+@media (max-width: 899px) {
+  #root input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  #root textarea,
+  #root select {
+    font-size: max(16px, 1rem);
+  }
+}
+
 a {
   color: var(--color-brand);
 }
