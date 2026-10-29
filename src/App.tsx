@@ -5,7 +5,6 @@ import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
-import { OwnersSection } from './components/OwnersSection';
 import { FeedPage } from './components/social/FeedPage';
 import { RankingPage } from './components/social/RankingPage';
 import { siteConfig } from './config/site';
@@ -132,7 +131,6 @@ export default function App() {
             onOpenCourt={openCourt}
           />
           <HowItWorks />
-          <OwnersSection />
         </main>
       )}
       <Footer onNavigate={go} />
