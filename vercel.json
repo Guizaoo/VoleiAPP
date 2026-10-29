@@ -9,7 +9,7 @@
       "destination": "https://voleiapp-production.up.railway.app/api/:path*"
     },
     {
-      "source": "/((?!assets/|images/|favicon|privacidade.html$).*)",
+      "source": "/((?!assets/|images/|favicon|privacidade.html$|termos.html$).*)",
       "destination": "/index.html"
     }
   ]
