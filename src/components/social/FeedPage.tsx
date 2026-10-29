@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ImagePlus, Info } from 'lucide-react';
+import { ImagePlus } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import type { FeedState } from '../../hooks/useFeed';
 import { socialService, visitor } from '../../services/socialService';
@@ -44,10 +44,6 @@ export function FeedPage({ feed, onOpenCourt, onSeeRanking }: FeedPageProps) {
         <h1 id="feed-title" className={styles.title}>
           Feed
         </h1>
-        <p className={styles.notice}>
-          <Info size={15} aria-hidden="true" />
-          Perfis, postagens e ranking são fictícios, para demonstração.
-        </p>
       </header>
 
       <div className={styles.layout}>
