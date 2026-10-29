@@ -81,10 +81,19 @@
 
 .media {
   position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
   aspect-ratio: 1 / 1;
   background: var(--color-surface-muted);
   user-select: none;
 }
+
+.media:focus-visible { outline-offset: -4px; }
+.photoFrame { position: relative; width: 100%; height: min(84dvh, 900px); }
+.photoFrame img { object-fit: contain; background: #080b09; }
 
 .burst {
   position: absolute;
