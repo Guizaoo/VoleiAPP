@@ -34,10 +34,90 @@
   margin-top: var(--space-6);
 }
 
+.rules {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.rulesHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.rulesHeading h2 { font-size: var(--text-xl); }
+.seasonBadge {
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-strong);
+  padding: 6px 12px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.rules > p, .rulesList { color: var(--color-text-muted); font-size: var(--text-sm); }
+.rulesDetails { margin-top: var(--space-3); }
+.rulesDetails summary { cursor: pointer; color: var(--color-brand); font-weight: 700; padding-block: 12px; min-height: 44px; }
+.rulesList { padding-left: var(--space-5); }
+.rulesList li + li { margin-top: var(--space-3); }
+.rulesList strong { color: var(--color-text); }
+
 .scope {
   margin-top: var(--space-3);
   font-size: var(--text-xs);
   color: var(--color-text-subtle);
+}
+
+.prizes {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.prizesHeading h2 {
+  margin-top: var(--space-3);
+  font-size: var(--text-xl);
+}
+
+.prizesHeading p, .prizeCard p {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.prizeGrid {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.prizeCard {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #f6f5ee;
+}
+
+.prizeCard:first-child { border-color: #c7ac65; background: #faf6e9; }
+.prizePlace { color: #28543a; font-weight: 800; font-size: var(--text-sm); }
+.prizeArt { display: block; width: 100%; height: 170px; margin-block: var(--space-2); }
+.prizeCard h3 { font-size: var(--text-md); color: #173e2a; }
+.prizeCard p { color: #526158; }
+.prizeNote { margin-top: var(--space-4); font-size: var(--text-xs); color: var(--color-text-subtle); }
+.cashPrize { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3); min-height: 170px; margin-block: var(--space-2); color: #205739; }
+.cashPrize strong { font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
+
+@media (min-width: 640px) {
+  .prizeGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* Pódio */
