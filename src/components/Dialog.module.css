@@ -159,3 +159,16 @@
     opacity: 0;
   }
 }
+
+/* Detalhes de premiação ficam centralizados também no celular. */
+.centeredBackdrop {
+  align-items: center;
+  padding: 20px;
+}
+.centered {
+  max-width: 480px;
+  max-height: 88dvh;
+  border-radius: var(--radius-xl);
+  animation-name: popIn;
+}
+.centered .handle { display: none; }

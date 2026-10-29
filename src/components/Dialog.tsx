@@ -16,7 +16,7 @@ interface DialogProps {
   footer?: ReactNode;
   closeLabel?: string;
   /** "story" abre em tela cheia com fundo escuro (visualizador de stories). */
-  variant?: 'default' | 'story';
+  variant?: 'default' | 'story' | 'centered';
   children: ReactNode;
 }
 
@@ -99,14 +99,14 @@ export function Dialog({
 
   return createPortal(
     <div
-      className={`${styles.backdrop} ${variant === 'story' ? styles.storyBackdrop : ''}`}
+      className={`${styles.backdrop} ${variant === 'story' ? styles.storyBackdrop : ''} ${variant === 'centered' ? styles.centeredBackdrop : ''}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
         ref={panelRef}
-        className={`${styles.panel} ${size === 'lg' ? styles.large : ''} ${variant === 'story' ? styles.story : ''}`}
+        className={`${styles.panel} ${size === 'lg' ? styles.large : ''} ${variant === 'story' ? styles.story : ''} ${variant === 'centered' ? styles.centered : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
